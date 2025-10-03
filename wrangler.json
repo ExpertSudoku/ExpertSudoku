@@ -1,0 +1,26 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "daily-sudoku",
+  "main": "./worker/index.ts",
+  "compatibility_date": "2025-04-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "observability": {
+    "enabled": true
+  },
+  "upload_source_maps": true,
+  "assets": {
+    "directory": "./dist/client",
+    "not_found_handling": "single-page-application"
+  },
+  "vars": {
+    "VITE_CLIENT_ID": "",
+    "CLIENT_SECRET": ""
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "daily-sudoku",
+      "database_id": "162a3fb7-8da1-4d60-9e3f-0d28d66bfb2e"
+    }
+  ]
+}
