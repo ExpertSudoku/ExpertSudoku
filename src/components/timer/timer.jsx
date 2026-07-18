@@ -7,6 +7,9 @@ import './timer.css';
 import PauseButton from '../buttons/pause-button';
 
 function ElapsedTime ({intervalStartTime, endTime, pausedAt}) {
+    // A clock's first paint needs the real current time - the impure read
+    // is inherent (React's own clock examples do the same).
+    // eslint-disable-next-line react-hooks/purity
     const [tickNow, setTickNow] = useState(Date.now());
 
     useEffect(() => {

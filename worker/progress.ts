@@ -5,7 +5,6 @@ import { puzzles, progress } from '../db/schema';
 import { utcDayString } from './day';
 import { requireSession, SessionVariables } from './session';
 import { scheduleLiveMessageUpdate } from './live-message';
-// @ts-ignore - plain JS, dependency-free shared module
 import { isDifficulty } from '../shared/difficulties.js';
 
 export const progressRoutes = new Hono<{ Bindings: Env; Variables: SessionVariables }>();

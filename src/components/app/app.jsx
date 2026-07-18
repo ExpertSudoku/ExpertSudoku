@@ -1,6 +1,5 @@
 import { useState, useCallback, useEffect, useMemo } from 'react';
 
-import {saveSvgAsPng} from 'save-svg-as-png';
 
 import { newSudokuModel, modelHelpers, SETTINGS } from '../../lib/sudoku-model.js';
 import useWindowSize from '../../lib/use-window-size';
@@ -47,34 +46,6 @@ function createInitialGrid(progressTracker, initialDigits, difficultyLevel, save
 
     document.body.dataset.initialDigits = grid.get('initialDigits');
     return grid;
-}
-
-function saveScreenshot () {
-    // Copy all applicable CSS custom property (variable) values directly into
-    // the style property of the SVG element
-    const svgGrid = document.getElementById('main-grid').firstChild;
-    const elStyle = getComputedStyle(svgGrid); // computed values for current theme
-    const cssVars = Array.from(document.styleSheets)
-        .map(styleSheet => Array.from(styleSheet.cssRules))
-        .flat()
-        .filter(cssRule => cssRule.selectorText === ':root')
-        .map(cssRule => cssRule.cssText.split('{')[1].split('}')[0].trim().split(';'))
-        .flat()
-        .filter(text => text !== "")
-        .map(text => text.split(':')[0].trim())
-        .filter(name => name.startsWith('--'))
-        .map(name => {return {name: name, value: elStyle.getPropertyValue(name)}});
-    cssVars.forEach(cv => svgGrid.style.setProperty(cv.name, cv.value));
-    // Save SVG element to PNG (which will complete asynchronously)
-    const options = {
-        selectorRemap: (selector) => selector.replace(/[.]sudoku-grid\s+/, '')
-    };
-    saveSvgAsPng(svgGrid, "sudoku-exchange-screenshot.png", options);
-    // Remove the variable values from the SVG element some time later
-    setTimeout(
-        () => cssVars.forEach(cv => svgGrid.style.setProperty(cv.name, '')),
-        1000
-    );
 }
 
 function handleVisibilityChange(setGrid) {
@@ -482,7 +453,7 @@ function App({ initialDigits, difficultyLevel, puzzleNumber, savedState, stateAd
 
     useEffect(
         () => {
-            const blurHandler = (e) => clearTempInputMode(setGrid);
+            const blurHandler = () => clearTempInputMode(setGrid);
             window.addEventListener('blur', blurHandler);
             return () => window.removeEventListener('blur', blurHandler);
         },
@@ -491,7 +462,7 @@ function App({ initialDigits, difficultyLevel, puzzleNumber, savedState, stateAd
 
     useEffect(
         () => {
-            const visibilityHandler = (e) => handleVisibilityChange(setGrid);
+            const visibilityHandler = () => handleVisibilityChange(setGrid);
             document.addEventListener("visibilitychange", visibilityHandler);
             return () => window.removeEventListener('blur', visibilityHandler);
         },

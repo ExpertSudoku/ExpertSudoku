@@ -572,7 +572,6 @@ export const modelHelpers = {
 
     applyModalAction: (grid, args) => {
         const action = args.action || args;
-        const oldModalState = grid.get('modalState');
         grid = grid.set('modalState', undefined);
         if (action === 'cancel' || action === 'close') {
             return grid;

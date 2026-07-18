@@ -1,7 +1,6 @@
 import { useState } from 'react';
 
 import { deleteMyData } from '../../lib/api.ts';
-import { getCompletedDifficulties } from '../../lib/completions.js';
 
 // Self-service data deletion, shown on the Discord picker screen. Two-step
 // confirm (no modal needed), then DELETE /api/me - the session token is the

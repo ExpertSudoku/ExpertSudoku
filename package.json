@@ -17,12 +17,12 @@
   "dependencies": {
     "@discord/embedded-app-sdk": "^2.4.0",
     "@resvg/resvg-wasm": "^2.6.2",
+    "discord-api-types": "0.38.50",
     "drizzle-orm": "^0.45.2",
     "hono": "^4.9.9",
     "immutable": "4.1.0",
     "react": "18.2.0",
-    "react-dom": "18.2.0",
-    "save-svg-as-png": "1.4.17"
+    "react-dom": "18.2.0"
   },
   "scripts": {
     "build": "vite build",
@@ -38,16 +38,21 @@
     "db:migrate:remote": "wrangler d1 migrations apply expertsudoku-prod --remote",
     "seed:generate": "node scripts/generate-puzzles.mjs",
     "seed:local": "wrangler d1 execute expertsudoku-prod --local --file=seed.sql",
-    "seed:remote": "wrangler d1 execute expertsudoku-prod --remote --file=seed.sql"
-  },
-  "eslintConfig": {
-    "extends": "react-app"
+    "seed:remote": "wrangler d1 execute expertsudoku-prod --remote --file=seed.sql",
+    "typecheck": "tsc --noEmit -p tsconfig.app.json && tsc --noEmit -p tsconfig.node.json && tsc --noEmit -p tsconfig.worker.json"
   },
   "devDependencies": {
     "@cloudflare/vite-plugin": "^1.13.10",
+    "@eslint/js": "^9.39.5",
     "@types/react-dom": "^19.2.0",
     "@vitejs/plugin-react": "^5.0.4",
     "drizzle-kit": "^0.31.10",
+    "eslint": "^9.39.5",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "globals": "^17.7.0",
+    "typescript": "5.9",
+    "typescript-eslint": "^8.64.0",
     "vite": "^7.1.9",
     "wrangler": "^4.42.0"
   }

@@ -3,7 +3,6 @@ import { InteractionResponseType, InteractionType } from 'discord-api-types/v10'
 import { eq, and } from 'drizzle-orm';
 import { getDb } from './db';
 import { pendingLaunches } from '../db/schema';
-// @ts-ignore - plain JS, dependency-free shared module
 import { isDifficulty } from '../shared/difficulties.js';
 
 // Discord interactions endpoint (portal: "Interactions Endpoint URL" must

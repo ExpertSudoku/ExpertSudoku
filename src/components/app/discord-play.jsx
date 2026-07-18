@@ -18,8 +18,6 @@ export default function DiscordPlay({ difficulty, session, onExit, onSwitchDiffi
 
     useEffect(() => {
         let cancelled = false;
-        setData(null);
-        setCompleted(false);
         Promise.all([
             fetchTodayPuzzle(difficulty),
             fetchProgress(session.sessionToken, difficulty),
@@ -41,7 +39,6 @@ export default function DiscordPlay({ difficulty, session, onExit, onSwitchDiffi
         return () => { cancelled = true; };
     }, [difficulty, session.sessionToken]);
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     const stateAdapter = useMemo(() => {
         const adapter = createServerAdapter(session.sessionToken, difficulty);
         return {

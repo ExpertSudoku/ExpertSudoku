@@ -2,7 +2,6 @@ import './help.css';
 
 export default function HelpPage({modalHandler}) {
     const closeHandler = () => modalHandler('cancel');
-    const difficultyRatingsURL = "https://github.com/SudokuMonster/SukakuExplainer/wiki/Difficulty-Ratings-in-Sukaku-Explainer-v1.17.8";
     return <div className="help-page">
         <div className="content">
             <button className="close-button" onClick={closeHandler}>×</button>

@@ -149,7 +149,7 @@ app.notFound((context) => {
 
 export default {
     fetch: app.fetch,
-    scheduled(_event: ScheduledEvent, env: Env, ctx: ExecutionContext) {
+    scheduled(_controller: ScheduledController, env: Env, ctx: ExecutionContext) {
         ctx.waitUntil(runDailyStreaks(env));
     },
 } satisfies ExportedHandler<Env>;

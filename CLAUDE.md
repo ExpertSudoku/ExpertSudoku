@@ -92,10 +92,13 @@ Mixed JS/TS is intentional: the inherited sudoku code is `.js`/`.jsx`, the Disco
 
 `@resvg/resvg-wasm`'s `index_bg.wasm` is imported directly (`import wasm from '@resvg/resvg-wasm/index_bg.wasm'`) and Just Works under the `@cloudflare/vite-plugin` build (bundled as a `compiled-wasm` module) — no fallback needed. The **font** for the streak leaderboard image does *not* get the same treatment: a plain `.ttf` import is treated as a generic static asset (a URL string), not raw bytes, so `worker/render/leaderboard-image.ts` imports it with an explicit `?inline` suffix to force Vite to inline it as a base64 `data:` URI at build time, then decodes that back to bytes for `resvg`'s `fontBuffers` option. The board image has no text, so it doesn't need any of this.
 
-## Known issues
+## Linting
 
-- `npm run lint` doesn't work in this checked-out state: `eslint` isn't installed (only declared via a legacy CRA-style `eslintConfig` in `package.json`, with no `eslint`/`eslint-config-react-app` in `devDependencies`), and installing them pulls in `@typescript-eslint/parser` versions incompatible with this repo's toolchain. This predates the ExpertSudoku changes.
-- There is no `typescript` package in `devDependencies`, so nothing here ever actually runs `tsc` — Vite/esbuild transpile `.ts`/`.tsx` without type-checking. The three `tsconfig*.json` files are mostly documentation of intent (module boundaries) rather than an enforced gate.
+`npm run lint` runs ESLint 9 (flat config, `eslint.config.mjs`: `@eslint/js` + `typescript-eslint` in syntax-only mode + `eslint-plugin-react`/`react-hooks`) over the whole repo and passes clean — keep it that way. Config notes: `@ts-ignore` is allowed WITH a description (there is no tsc here, so `@ts-expect-error` would flag as unused in editors that resolve the untyped .js/.jsx imports fine); unused vars/args must be `_`-prefixed; `react/prop-types` and `react/react-in-jsx-scope` are off. Discord REST paths are built with `discord-api-types/v10` (`Routes`/`RouteBases`/`CDNRoutes` + the `ComponentType`/`ButtonStyle`/`InteractionType`/`InteractionResponseType` enums) — don't hand-write `discord.com/api` URLs or magic component numbers.
+
+## Type checking
+
+`npm run typecheck` runs `tsc --noEmit` over all three project configs (app/node/worker) and passes clean — Vite/esbuild still transpile without checking, so this script (and the IDE) is the type gate. Supporting declarations: `src/vite-env.d.ts` (Vite client types + typed `VITE_CLIENT_ID`, strict `import.meta.env`), `shared/difficulties.d.ts` (hand-written types for the plain-JS shared module — its `isDifficulty` type guard is what narrows query params, and it made the old `@ts-ignore`s on those imports obsolete), `worker/wasm.d.ts` (`*.wasm` → `WebAssembly.Module`).
 
 ## License
 

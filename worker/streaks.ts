@@ -5,7 +5,6 @@ import { utcDayString, addDaysToDayString, puzzleNumber } from './day';
 import { sendImageMessage } from './discord';
 import { fetchAvatarPng } from './render/avatars';
 import { renderStreakLeaderboardPng } from './render/leaderboard-image';
-// @ts-ignore - plain JS, dependency-free shared module
 import { DIFFICULTIES } from '../shared/difficulties.js';
 
 const DIFFICULTY_LABEL: Record<string, string> = {

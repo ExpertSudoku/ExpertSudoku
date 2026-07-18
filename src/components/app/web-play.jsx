@@ -23,7 +23,6 @@ export default function WebPlay() {
             return;
         }
         let cancelled = false;
-        setPuzzle(null);
         fetchTodayPuzzle(difficulty).then((result) => {
             if (!cancelled) {
                 setPuzzle(result);
@@ -36,7 +35,6 @@ export default function WebPlay() {
     const puzzleStateKey = initialDigits ? ('save-' + initialDigits) : null;
     const day = (puzzle && !puzzle.error) ? puzzle.day : null;
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     const savedState = useMemo(
         () => (puzzleStateKey ? modelHelpers.loadLocalPuzzleState(puzzleStateKey) : null),
         [puzzleStateKey]

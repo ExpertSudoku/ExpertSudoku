@@ -1,12 +1,12 @@
 import { useSyncExternalStore } from 'react';
 import DiscordRoot from '../app/discord-root.tsx';
-// @ts-ignore
+// @ts-ignore - untyped .jsx/.js module
 import Landing from './landing.jsx';
-// @ts-ignore
+// @ts-ignore - untyped .jsx/.js module
 import LegalPage from './legal.jsx';
-// @ts-ignore
+// @ts-ignore - untyped .jsx/.js module
 import AboutPage from './about.jsx';
-// @ts-ignore
+// @ts-ignore - untyped .jsx/.js module
 import WebPlay from '../app/web-play.jsx';
 
 // Hand-rolled router: history.pushState + a popstate listener drives which
@@ -67,7 +67,9 @@ export default function SiteRoot() {
 
     switch (path.split('?')[0]) {
         case '/play':
-            return <WebPlay />;
+            // Keyed by path: play->play navigation (difficulty switch)
+            // remounts with fresh state instead of resetting in an effect.
+            return <WebPlay key={path} />;
         case '/imprint':
             return <LegalPage page="imprint" />;
         case '/privacy':

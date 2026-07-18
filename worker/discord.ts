@@ -27,7 +27,7 @@ function imageMessageForm(
 ): FormData {
     const form = new FormData();
     form.set('payload_json', JSON.stringify(payload));
-    form.set('files[0]', new Blob([png as unknown as BlobPart], { type: 'image/png' }), filename);
+    form.set('files[0]', new Blob([png], { type: 'image/png' }), filename);
     return form;
 }
 

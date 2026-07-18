@@ -1,15 +1,15 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-// @ts-ignore
+// @ts-ignore - untyped .jsx/.js module
 import './index.css'
-// @ts-ignore
+// @ts-ignore - untyped .jsx/.js module
 import './site-theme.css'
-// @ts-ignore
+// @ts-ignore - untyped .jsx/.js module
 import { initTheme } from './lib/theme.js'
-// @ts-ignore
+// @ts-ignore - untyped .jsx/.js module
 import { cleanupExpiredPuzzleSaves } from './lib/storage-cleanup.js'
 import SiteRoot from "./components/site/site-root.tsx";
-// @ts-ignore
+// @ts-ignore - untyped .jsx/.js module
 import DevBanner from "./components/site/dev-banner.jsx";
 
 initTheme()

@@ -18,7 +18,7 @@ function ModalBackdrop() {
     );
 }
 
-export default function ModalContainer({modalState, modalHandler, menuHandler}) {
+export default function ModalContainer({modalState, modalHandler}) {
     let content = null;
     if (!modalState) {
         return null;

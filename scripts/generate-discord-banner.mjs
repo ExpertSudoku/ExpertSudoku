@@ -14,7 +14,7 @@ const root = join(__dirname, '..');
 await initWasm(readFileSync(join(root, 'node_modules/@resvg/resvg-wasm/index_bg.wasm')));
 
 const W = 1360, H = 480; // 2x Discord bot profile banner (680x240, 17:6)
-const NIGHT = '#1b1b1e', CELL = '#242424', EMPTY = '#2f2f2f', GIVEN = '#666666';
+const NIGHT = '#1b1b1e', EMPTY = '#2f2f2f', GIVEN = '#666666';
 const BLURPLE = '#5865f2', INK = '#e6e6e6', DIM = '#8a8a8a';
 const GREEN = '#23a55a', AMBER = '#f0b232', RED = '#f23f43';
 

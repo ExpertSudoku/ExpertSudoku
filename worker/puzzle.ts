@@ -3,7 +3,6 @@ import { and, eq } from 'drizzle-orm';
 import { getDb } from './db';
 import { puzzles } from '../db/schema';
 import { utcDayString, puzzleNumber } from './day';
-// @ts-ignore - plain JS, dependency-free shared module
 import { isDifficulty } from '../shared/difficulties.js';
 
 export const puzzleRoutes = new Hono<{ Bindings: Env }>();
@@ -11,7 +10,7 @@ export const puzzleRoutes = new Hono<{ Bindings: Env }>();
 // `import.meta.env.DEV` is statically replaced at build time (Vite builds
 // the worker too), so in production the solution branch below is dead code -
 // the solution column is neither selected nor sent, ever.
-const IS_DEV = Boolean((import.meta as { env?: { DEV?: boolean } }).env?.DEV);
+const IS_DEV = Boolean(import.meta.env.DEV);
 
 // GET /api/puzzle/today?difficulty=medium|expert|hell
 // Only day/difficulty/givens are ever selected here - `solution` must never

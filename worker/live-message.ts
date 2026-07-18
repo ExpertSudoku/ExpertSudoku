@@ -6,7 +6,6 @@ import { renderBoardPng, CellState, EntryStatus, MAX_BOARDS } from './render/boa
 import { fetchAvatarPng } from './render/avatars';
 import { sendImageMessage, editImageMessage, MessageComponent } from './discord';
 import { puzzleNumber } from './day';
-// @ts-ignore - plain JS, dependency-free shared module
 import { DIFFICULTIES } from '../shared/difficulties.js';
 
 const EDIT_THROTTLE_MS = 5000;
@@ -95,7 +94,7 @@ function entrySeconds(row: ParticipantRow, status: EntryStatus): number {
 // handled by worker/interactions.ts, which records the choice and responds
 // with LAUNCH_ACTIVITY.
 function buildComponents(difficulty: string): MessageComponent[] {
-    const others = (DIFFICULTIES as string[]).filter((d) => d !== difficulty);
+    const others = DIFFICULTIES.filter((d) => d !== difficulty);
     return [{
         type: ComponentType.ActionRow,
         components: [

@@ -1,22 +1,22 @@
 import {createContext, useEffect, useRef, useState} from "react";
 import {CommandResponse, Platform} from "@discord/embedded-app-sdk";
 import {getDiscordSdk} from "../../discordSdk.ts";
-// @ts-ignore
+// @ts-ignore - untyped .jsx/.js module
 import LoadingPage from '../site/loading-page.jsx'
-// @ts-ignore
+// @ts-ignore - untyped .jsx/.js module
 import DifficultyPicker from "../difficulty-picker/difficulty-picker.jsx";
-// @ts-ignore
+// @ts-ignore - untyped .jsx/.js module
 import DiscordPlay from "./discord-play.jsx";
-// @ts-ignore
+// @ts-ignore - untyped .jsx/.js module
 import DeleteDataButton from "./delete-data-button.jsx";
-// @ts-ignore
+// @ts-ignore - untyped .jsx/.js module
 import {isDifficulty} from "../../../shared/difficulties.js";
-// @ts-ignore
+// @ts-ignore - untyped .jsx/.js module
 import {recordCompletion, getCompletedDifficulties} from "../../lib/completions.js";
 import {fetchProgressSummary} from "../../lib/api.ts";
-// @ts-ignore
+// @ts-ignore - untyped .jsx/.js module
 import LogoMark from "../site/logo-mark.jsx";
-// @ts-ignore
+// @ts-ignore - untyped .jsx/.js module
 import ThemeSelect from "../site/theme-select.jsx";
 
 export type SessionInfo = {
@@ -30,7 +30,7 @@ export const SessionContext = createContext<SessionInfo | null>(null);
 // code for both a Discord access token (needed once, for `authenticate`)
 // and a server-minted session token (used for every later API call, see
 // worker/session.ts) -> difficulty picker -> DiscordPlay.
-export default function DiscordRoot(): any {
+export default function DiscordRoot() {
     type Auth = CommandResponse<'authenticate'>;
     const [auth, setAuth] = useState<Auth | null>(null);
     const [session, setSession] = useState<SessionInfo | null>(null);
@@ -149,6 +149,7 @@ export default function DiscordRoot(): any {
     return (
         <SessionContext.Provider value={session}>
             <DiscordPlay
+                key={difficulty}
                 difficulty={difficulty}
                 session={session}
                 onExit={() => setDifficulty(null)}

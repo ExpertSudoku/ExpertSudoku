@@ -173,7 +173,7 @@ class NMMap {
     get(k, ...args) {
         const def = args.length > 0 ? args[0] : undefined;
         const m = this[_nm_map];
-        if (!m.hasOwnProperty(k)) {
+        if (!Object.prototype.hasOwnProperty.call(m, k)) {
             return def;
         }
         return m[k];
@@ -189,7 +189,7 @@ class NMMap {
         const def = args.length > 1 ? args.shift() : undefined;
         const f = args.shift();
         const old = this[_nm_map];
-        const prev = old.hasOwnProperty(k) ? old[k] : def;
+        const prev = Object.prototype.hasOwnProperty.call(old, k) ? old[k] : def;
         const m = { ...old, [k]: f(prev) };
         return this._new_map(m);
     }
@@ -207,7 +207,7 @@ class NMMap {
         while (args.length > 0) {
             const m2 = args.pop();
             for (const k in m2) {
-                if (m2.hasOwnProperty(k)) {
+                if (Object.prototype.hasOwnProperty.call(m2, k)) {
                     m[k] = m2[k];
                 }
             }
@@ -289,7 +289,7 @@ class NMSet {
     }
 
     includes(v) {
-        return this[_nm_set].hasOwnProperty(v);
+        return Object.prototype.hasOwnProperty.call(this[_nm_set], v);
     }
 
     union(s2) {
