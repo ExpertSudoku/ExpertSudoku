@@ -64,7 +64,7 @@
 }
 
 :root.discord-mobile {
-    --discord-top-inset: calc(env(safe-area-inset-top, 0px) + 1.5rem);
+    --discord-top-inset: calc(env(safe-area-inset-top, 0px) + 3.1rem - var(--dev-banner-h, 0));
 }
 
 /* Mobile: the in-game header wraps to two rows (status-bar.css, same
