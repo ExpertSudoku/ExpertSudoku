@@ -55,7 +55,9 @@ const resvg = new Resvg(svg, {
         loadSystemFonts: false,
         defaultFontFamily: 'Spline Sans Mono',
     },
-    fitTo: { mode: 'original' },
+    // 4x the 680x240 Discord banner spec - layout is defined at 2x (1360x480)
+    // and scaled up losslessly here (it's all vectors).
+    fitTo: { mode: 'width', value: 2720 },
 });
 writeFileSync(join(root, 'src/svg/logos/discord-banner.png'), resvg.render().asPng());
 writeFileSync(join(root, 'src/svg/logos/discord-banner.svg'), svg);
