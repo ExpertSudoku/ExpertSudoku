@@ -4,6 +4,7 @@ import { eq, and, sql } from 'drizzle-orm';
 import { getDb } from './db';
 import { pendingLaunches, liveMessages } from '../db/schema';
 import { utcDayString } from './day';
+import { DIFFICULTIES } from '../shared/difficulties.js';
 import { isDifficulty } from '../shared/difficulties.js';
 
 // Discord interactions endpoint (portal: "Interactions Endpoint URL" must
@@ -61,7 +62,7 @@ type Interaction = {
     // live-message.ts can post into channels where the bot isn't a member.
     token?: string;
     channel_id?: string;
-    data?: { custom_id?: string; component_type?: number };
+    data?: { custom_id?: string; component_type?: number; name?: string; type?: number };
     member?: { user?: { id: string } };
     user?: { id: string };
 };
@@ -113,36 +114,10 @@ interactionRoutes.post('/', async (context) => {
                     target: [pendingLaunches.userId, pendingLaunches.channelId],
                     set: { difficulty, createdAt: new Date() },
                 });
-            // Bank the interaction's webhook token on the live-message row
-            // for the difficulty being launched - the ~15 min fallback for
-            // posting when the bot isn't a channel member. A tracked message
-            // authored by an OLDER token can't be edited with this one, so
-            // drop it (next pass posts fresh); bot-authored messages keep
-            // their id, the token is just spare capability then.
+            // Bank the interaction's webhook token for the difficulty being
+            // launched - see bankInteractionToken.
             if (interaction.token) {
-                const now = new Date();
-                await db
-                    .insert(liveMessages)
-                    .values({
-                        channelId,
-                        day: utcDayString(),
-                        difficulty,
-                        messageId: null,
-                        lastEditAt: null,
-                        dirty: false,
-                        viaWebhook: false,
-                        interactionToken: interaction.token,
-                        interactionTokenAt: now,
-                    })
-                    .onConflictDoUpdate({
-                        target: [liveMessages.channelId, liveMessages.day, liveMessages.difficulty],
-                        set: {
-                            interactionToken: interaction.token,
-                            interactionTokenAt: now,
-                            messageId: sql`CASE WHEN ${liveMessages.viaWebhook} THEN NULL ELSE ${liveMessages.messageId} END`,
-                            viaWebhook: sql`0`,
-                        },
-                    });
+                await bankInteractionToken(db, channelId, interaction.token, [difficulty]);
             }
             return context.json({ type: InteractionResponseType.LaunchActivity });
         }
@@ -151,8 +126,62 @@ interactionRoutes.post('/', async (context) => {
         return context.json({ type: InteractionResponseType.LaunchActivity });
     }
 
+    // The Entry Point command ("Play" - handler APP_HANDLER, so the launch
+    // interaction reaches us instead of Discord auto-handling it). Bank the
+    // token for EVERY difficulty of today - the player only picks one after
+    // the activity opens - then tell Discord to launch. One token authoring
+    // several rows' messages is fine: an interaction allows multiple
+    // follow-ups, each editable via the same token + its message id.
+    if (interaction.type === InteractionType.ApplicationCommand) {
+        const channelId = interaction.channel_id;
+        if (interaction.token && channelId) {
+            await bankInteractionToken(getDb(context.env), channelId, interaction.token, DIFFICULTIES);
+        }
+        return context.json({ type: InteractionResponseType.LaunchActivity });
+    }
+
     return context.json({ error: 'unsupported-interaction' }, 400);
 });
+
+// The ~15 min fallback for posting when the bot isn't a channel member
+// (worker/live-message.ts): store the freshest interaction token on the
+// (channel, today, difficulty) live-message rows. A tracked message authored
+// by an OLDER token can't be edited with this one, so drop it (the next
+// update pass posts fresh); bot-authored messages keep their id - the token
+// is just spare capability then.
+async function bankInteractionToken(
+    db: ReturnType<typeof getDb>,
+    channelId: string,
+    token: string,
+    difficulties: readonly string[]
+): Promise<void> {
+    const now = new Date();
+    const day = utcDayString();
+    for (const difficulty of difficulties) {
+        await db
+            .insert(liveMessages)
+            .values({
+                channelId,
+                day,
+                difficulty,
+                messageId: null,
+                lastEditAt: null,
+                dirty: false,
+                viaWebhook: false,
+                interactionToken: token,
+                interactionTokenAt: now,
+            })
+            .onConflictDoUpdate({
+                target: [liveMessages.channelId, liveMessages.day, liveMessages.difficulty],
+                set: {
+                    interactionToken: token,
+                    interactionTokenAt: now,
+                    messageId: sql`CASE WHEN ${liveMessages.viaWebhook} THEN NULL ELSE ${liveMessages.messageId} END`,
+                    viaWebhook: sql`0`,
+                },
+            });
+    }
+}
 
 // Called by /api/token: returns (and consumes) a fresh pending difficulty
 // for this user+channel, or null.
