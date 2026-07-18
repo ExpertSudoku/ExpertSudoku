@@ -70,7 +70,20 @@
     cursor: pointer;
 }
 
-/* The number pad is hidden entirely while the game is paused. */
+/* The number pad fades out while the game is paused. Opacity (not
+ * display) so it keeps its layout slot - the grid doesn't re-centre when
+ * pausing - and the fade matches the grid's pause cross-fade timing. */
+.vkbd {
+    transition: opacity 280ms ease;
+}
+
 .paused .vkbd {
-    display: none;
+    opacity: 0;
+    pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .vkbd {
+        transition: none;
+    }
 }

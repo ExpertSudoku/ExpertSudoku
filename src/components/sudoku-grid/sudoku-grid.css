@@ -196,6 +196,46 @@ text.inner-pencil,
     fill: var(--cell-bg-1-fill-color);
 }
 
+/* Pause/resume cross-fade: while the transition settles, sudoku-grid.jsx
+ * mounts both the game layer and the pause layer with one of these classes
+ * each (duration mirrored in PAUSE_TRANSITION_MS). */
+.grid-layer-entering {
+    animation: grid-layer-in 280ms ease both;
+}
+
+.grid-layer-exiting {
+    animation: grid-layer-out 280ms ease both;
+    pointer-events: none;
+}
+
+@keyframes grid-layer-in {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+@keyframes grid-layer-out {
+    from { opacity: 1; }
+    to   { opacity: 0; }
+}
+
+/* The "Paused" label + Continue button drift up slightly as they fade in. */
+.grid-layer-entering .pause-overlay {
+    animation: pause-overlay-rise 280ms ease both;
+}
+
+@keyframes pause-overlay-rise {
+    from { transform: translateY(12px); }
+    to   { transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .grid-layer-entering,
+    .grid-layer-exiting,
+    .grid-layer-entering .pause-overlay {
+        animation-duration: 0.01ms;
+    }
+}
+
 .paused-label {
     fill: var(--given-digit-color);
     font-family: var(--su-mono, monospace);

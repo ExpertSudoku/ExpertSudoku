@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 
 import './sudoku-grid.css';
 
@@ -99,14 +99,14 @@ function layerPausedTiles ({cells, cellSize, dim}) {
     });
 }
 
-function cellContentLayers({cells, cellSize, dim, matchDigit, simplePencilMarking, outlineSelection, isPaused, onResume}) {
-    if (isPaused) {
-        const centerX = dim.width / 2;
-        const buttonWidth = 3.6 * cellSize;
-        const buttonHeight = 1.0 * cellSize;
-        const buttonY = dim.height / 2 + 0.35 * cellSize;
-        return <>
-            {layerPausedTiles({cells, cellSize, dim})}
+function pauseContentLayers({cells, cellSize, dim, onResume}) {
+    const centerX = dim.width / 2;
+    const buttonWidth = 3.6 * cellSize;
+    const buttonHeight = 1.0 * cellSize;
+    const buttonY = dim.height / 2 + 0.35 * cellSize;
+    return <>
+        {layerPausedTiles({cells, cellSize, dim})}
+        <g className="pause-overlay">
             <text className="paused-label"
                 x={centerX}
                 y={dim.height / 2 - 0.65 * cellSize}
@@ -130,8 +130,11 @@ function cellContentLayers({cells, cellSize, dim, matchDigit, simplePencilMarkin
                     dominantBaseline="middle"
                 >Continue</text>
             </g>
-        </>;
-    }
+        </g>
+    </>;
+}
+
+function gameContentLayers({cells, cellSize, dim, matchDigit, simplePencilMarking, outlineSelection}) {
     const backgrounds = layerCellBackgrounds({cells, cellSize, dim, matchDigit, simplePencilMarking});
     const selectionOutline = outlineSelection
         ? layerSelectionOutline({cells, dim})
@@ -144,6 +147,25 @@ function cellContentLayers({cells, cellSize, dim, matchDigit, simplePencilMarkin
         {pencilMarks}
         {digits}
     </>;
+}
+
+// Matches the animation duration in sudoku-grid.css (.grid-layer-*).
+const PAUSE_TRANSITION_MS = 280;
+
+// Cross-fade between the game content and the pause screen: while a
+// pause/resume is settling, BOTH layers are mounted (one fading in, one
+// fading out); once settled, the hidden layer unmounts completely - so a
+// paused game still has no digits anywhere in the DOM.
+function usePauseTransition(isPaused) {
+    const [settled, setSettled] = useState(isPaused);
+    useEffect(() => {
+        if (settled === isPaused) {
+            return;
+        }
+        const timer = setTimeout(() => setSettled(isPaused), PAUSE_TRANSITION_MS);
+        return () => clearTimeout(timer);
+    }, [isPaused, settled]);
+    return settled !== isPaused;   // true while transitioning
 }
 
 function indexFromTouchEvent (e) {
@@ -199,8 +221,22 @@ function SudokuGrid({grid, gridId, dimensions, mouseDownHandler, mouseOverHandle
     const outlineSelection = settings[SETTINGS.outlineSelection];
     const matchDigit = highlightMatches ? grid.get('matchDigit') : undefined;
     const isPaused = grid.get('pausedAt') !== undefined;
+    const inTransition = usePauseTransition(isPaused);
     const cells = grid.get('cells').toArray();
-    const cellContents = cellContentLayers({cells, cellSize, dim, matchDigit, simplePencilMarking, outlineSelection, isPaused, onResume});
+    const gameLayer = (!isPaused || inTransition)
+        ? (
+            <g key="game" className={isPaused ? 'grid-layer-exiting' : (inTransition ? 'grid-layer-entering' : undefined)}>
+                {gameContentLayers({cells, cellSize, dim, matchDigit, simplePencilMarking, outlineSelection})}
+            </g>
+        )
+        : null;
+    const pauseLayer = (isPaused || inTransition)
+        ? (
+            <g key="pause" className={isPaused ? (inTransition ? 'grid-layer-entering' : undefined) : 'grid-layer-exiting'}>
+                {pauseContentLayers({cells, cellSize, dim, onResume})}
+            </g>
+        )
+        : null;
     // No cell covers while paused: cells aren't clickable (no pointer
     // cursor, no selection), and the covers would otherwise sit on top of
     // the Continue button.
@@ -219,7 +255,8 @@ function SudokuGrid({grid, gridId, dimensions, mouseDownHandler, mouseOverHandle
                 viewBox={`0 0 ${dim.width} ${dim.height}`}
             >
                 <rect className="grid-bg" width="100%" height="100%" />
-                {cellContents}
+                {gameLayer}
+                {pauseLayer}
                 {cellCovers}
             </svg>
         </div>
