@@ -1,4 +1,5 @@
 import { Hono } from "hono";
+import { RouteBases, OAuth2Routes, Routes } from "discord-api-types/v10";
 import {fetchAndRetry} from "./utils";
 import {puzzleRoutes} from "./puzzle";
 import {progressRoutes} from "./progress";
@@ -20,7 +21,7 @@ app.post("/api/token", async (context) => {
         channelId?: string;
         guildId?: string | null;
     };
-    const response = await fetchAndRetry('https://discord.com/api/oauth2/token', {
+    const response = await fetchAndRetry(`${OAuth2Routes.tokenURL}`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
@@ -46,7 +47,7 @@ app.post("/api/token", async (context) => {
     // Fetch the Discord profile so we can upsert `players` and mint a
     // session that carries the player id without needing to hit Discord
     // again on every later API call.
-    const meResponse = await fetchAndRetry('https://discord.com/api/users/@me', {
+    const meResponse = await fetchAndRetry(`${RouteBases.api}${Routes.user('@me')}`, {
         headers: { Authorization: `Bearer ${access_token}` },
     });
     if (!meResponse.ok) {

@@ -1,3 +1,6 @@
+import { CDNRoutes, ImageFormat, RouteBases } from 'discord-api-types/v10';
+import type { DefaultUserAvatarAssets } from 'discord-api-types/v10';
+
 // Fetches a Discord avatar (or the default avatar for a null hash) and
 // returns it as a base64 string, ready to embed as a data: URI in an <image>
 // element (see board-image.ts / leaderboard-image.ts).
@@ -15,16 +18,16 @@ function toBase64(bytes: Uint8Array): string {
     return btoa(binary);
 }
 
-function defaultAvatarIndex(userId: string): bigint {
+function defaultAvatarIndex(userId: string): DefaultUserAvatarAssets {
     // Discord's default-avatar formula for the new username system.
-    return (BigInt(userId) >> 22n) % 6n;
+    return Number((BigInt(userId) >> 22n) % 6n) as DefaultUserAvatarAssets;
 }
 
 function avatarUrl(userId: string, avatarHash: string | null): string {
     if (avatarHash) {
-        return `https://cdn.discordapp.com/avatars/${userId}/${avatarHash}.png?size=64`;
+        return `${RouteBases.cdn}${CDNRoutes.userAvatar(userId, avatarHash, ImageFormat.PNG)}?size=64`;
     }
-    return `https://cdn.discordapp.com/embed/avatars/${defaultAvatarIndex(userId)}.png`;
+    return `${RouteBases.cdn}${CDNRoutes.defaultUserAvatar(defaultAvatarIndex(userId))}`;
 }
 
 export async function fetchAvatarPng(_env: Env, userId: string, avatarHash: string | null): Promise<string> {

@@ -5,6 +5,7 @@ import ExitButton from "../buttons/exit-button";
 import HelpButton from "../buttons/help-button";
 // The exact same segmented Light/Auto/Dark control as the landing masthead.
 import ThemeSelect from "../site/theme-select.jsx";
+import Pips from "../site/pips.jsx";
 
 const stopPropagation = (e) => e.stopPropagation();
 
@@ -16,23 +17,11 @@ const WORDMARKS = {
     hell: { accent: 'Hell', rest: 'Sudoku', pips: 3 },
 };
 
-function Pips ({ count }) {
-    return (
-        <span className="site-name-pips" aria-hidden="true">
-            {Array.from({ length: count }, (_, i) => (
-                <svg key={i} viewBox="0 0 12 12">
-                    <path d="M 6 0 L 12 6 L 6 12 L 0 6 Z" />
-                </svg>
-            ))}
-        </span>
-    );
-}
-
 function Wordmark ({ difficulty, puzzleNumber }) {
     const mark = WORDMARKS[difficulty] ?? { accent: 'Expert', rest: 'Sudoku', pips: 2 };
     return (
         <span className={`site-name difficulty-${difficulty}`}>
-            <Pips count={mark.pips} />
+            <Pips count={mark.pips} className="site-name-pips" />
             <span className="site-name-accent">{mark.accent}</span>
             <span className="site-name-rest">{mark.rest}</span>
             {puzzleNumber

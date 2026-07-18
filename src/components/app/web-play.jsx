@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 
 import App from './app.jsx';
 import LoadingPage from '../site/loading-page.jsx';
+import PlayError from '../site/play-error.jsx';
 import { modelHelpers } from '../../lib/sudoku-model.js';
 import { isDifficulty } from '../../../shared/difficulties.js';
 import { navigate } from '../site/site-root.tsx';
@@ -60,23 +61,8 @@ export default function WebPlay() {
     if (puzzle === null) {
         return (<LoadingPage />);
     }
-    if (puzzle.error === 'no-puzzle') {
-        return (
-            <div className="site-page">
-                <div className="web-play-message">
-                    No puzzle available for today yet - check back soon!
-                </div>
-            </div>
-        );
-    }
     if (puzzle.error) {
-        return (
-            <div className="site-page">
-                <div className="web-play-message">
-                    Something went wrong loading today&apos;s puzzle. Please try again shortly.
-                </div>
-            </div>
-        );
+        return (<PlayError error={puzzle.error} />);
     }
 
     return (

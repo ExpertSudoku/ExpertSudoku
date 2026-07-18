@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 
 import App from './app.jsx';
 import LoadingPage from '../site/loading-page.jsx';
+import PlayError from '../site/play-error.jsx';
 import { fetchTodayPuzzle, fetchProgress } from '../../lib/api.ts';
 import { createServerAdapter } from '../../lib/save-adapter.js';
 import { recordCompletion, getCompletedDifficulties } from '../../lib/completions.js';
@@ -68,23 +69,8 @@ export default function DiscordPlay({ difficulty, session, onExit, onSwitchDiffi
     if (data === null) {
         return (<LoadingPage />);
     }
-    if (data.error === 'no-puzzle') {
-        return (
-            <div className="site-page">
-                <div className="web-play-message">
-                    No puzzle available for today yet - check back soon!
-                </div>
-            </div>
-        );
-    }
     if (data.error) {
-        return (
-            <div className="site-page">
-                <div className="web-play-message">
-                    Something went wrong loading today&apos;s puzzle. Please try again shortly.
-                </div>
-            </div>
-        );
+        return (<PlayError error={data.error} />);
     }
 
     return (

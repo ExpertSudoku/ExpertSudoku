@@ -1,4 +1,5 @@
 import { Hono } from 'hono';
+import { InteractionResponseType, InteractionType } from 'discord-api-types/v10';
 import { eq, and } from 'drizzle-orm';
 import { getDb } from './db';
 import { pendingLaunches } from '../db/schema';
@@ -11,11 +12,6 @@ import { isDifficulty } from '../shared/difficulties.js';
 // difficulty for (user, channel) and responds with LAUNCH_ACTIVITY, so
 // Discord opens the activity directly; /api/token then hands the recorded
 // difficulty back to the client, which skips the picker.
-
-const INTERACTION_PING = 1;
-const INTERACTION_MESSAGE_COMPONENT = 3;
-const RESPONSE_PONG = 1;
-const RESPONSE_LAUNCH_ACTIVITY = 12;
 
 // Pressing a button only counts for the launch that follows promptly -
 // stale rows (user pressed but never launched) are overwritten on the next
@@ -95,11 +91,11 @@ interactionRoutes.post('/', async (context) => {
 
     const interaction = JSON.parse(rawBody) as Interaction;
 
-    if (interaction.type === INTERACTION_PING) {
-        return context.json({ type: RESPONSE_PONG });
+    if (interaction.type === InteractionType.Ping) {
+        return context.json({ type: InteractionResponseType.Pong });
     }
 
-    if (interaction.type === INTERACTION_MESSAGE_COMPONENT) {
+    if (interaction.type === InteractionType.MessageComponent) {
         const customId = interaction.data?.custom_id ?? '';
         const [action, difficulty] = customId.split(':');
         const userId = interaction.member?.user?.id ?? interaction.user?.id;
@@ -114,11 +110,11 @@ interactionRoutes.post('/', async (context) => {
                     target: [pendingLaunches.userId, pendingLaunches.channelId],
                     set: { difficulty, createdAt: new Date() },
                 });
-            return context.json({ type: RESPONSE_LAUNCH_ACTIVITY });
+            return context.json({ type: InteractionResponseType.LaunchActivity });
         }
         // Unknown button - still launch the activity rather than erroring in
         // the client.
-        return context.json({ type: RESPONSE_LAUNCH_ACTIVITY });
+        return context.json({ type: InteractionResponseType.LaunchActivity });
     }
 
     return context.json({ error: 'unsupported-interaction' }, 400);

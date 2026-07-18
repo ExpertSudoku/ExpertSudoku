@@ -12,6 +12,17 @@ export const progressRoutes = new Hono<{ Bindings: Env; Variables: SessionVariab
 
 progressRoutes.use('*', requireSession);
 
+// Today's puzzle row for a difficulty, or undefined if not seeded. The full
+// row stays server-side - callers pick what they return.
+async function findTodaysPuzzle(db: ReturnType<typeof getDb>, day: string, difficulty: string) {
+    const rows = await db
+        .select()
+        .from(puzzles)
+        .where(and(eq(puzzles.day, day), eq(puzzles.difficulty, difficulty)))
+        .limit(1);
+    return rows[0];
+}
+
 // GET /api/progress?difficulty= -> {state: puzzleState|null, completedAt: ms|null}
 // for today's puzzle x the session's player.
 progressRoutes.get('/', async (context) => {
@@ -24,12 +35,7 @@ progressRoutes.get('/', async (context) => {
     const day = utcDayString();
     const db = getDb(context.env);
 
-    const puzzleRows = await db
-        .select({ id: puzzles.id })
-        .from(puzzles)
-        .where(and(eq(puzzles.day, day), eq(puzzles.difficulty, difficulty)))
-        .limit(1);
-    const puzzle = puzzleRows[0];
+    const puzzle = await findTodaysPuzzle(db, day, difficulty);
     if (!puzzle) {
         return context.json({ error: 'no-puzzle' }, 404);
     }
@@ -116,12 +122,7 @@ progressRoutes.post('/', async (context) => {
     const day = utcDayString();
     const db = getDb(context.env);
 
-    const puzzleRows = await db
-        .select()
-        .from(puzzles)
-        .where(and(eq(puzzles.day, day), eq(puzzles.difficulty, difficulty)))
-        .limit(1);
-    const puzzle = puzzleRows[0];
+    const puzzle = await findTodaysPuzzle(db, day, difficulty);
     if (!puzzle) {
         return context.json({ error: 'no-puzzle' }, 404);
     }

@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { DIFFICULTIES } from '../../../shared/difficulties.js';
 import { MINI_GRID_PATTERNS } from './mini-grid.js';
 import { fetchPuzzleMeta } from '../../lib/api.ts';
+import Pips from '../site/pips.jsx';
 
 import './difficulty-picker.css';
 
@@ -31,18 +32,6 @@ function loadTodaysGivens() {
         });
     }
     return cachedGivensPromise;
-}
-
-function Pips({ count }) {
-    return (
-        <span className="difficulty-pips" aria-hidden="true">
-            {Array.from({ length: count }, (_, i) => (
-                <svg key={i} viewBox="0 0 12 12" className="difficulty-pip">
-                    <path d="M 6 0 L 12 6 L 6 12 L 0 6 Z" />
-                </svg>
-            ))}
-        </span>
-    );
 }
 
 // The signature motif: a 9x9 redacted grid. With `givens` (an 81-char digit
@@ -106,7 +95,7 @@ export default function DifficultyPicker({ onPick, completed }) {
                         onClick={() => onPick(difficulty)}
                     >
                         <span className="difficulty-info">
-                            <Pips count={meta.pips} />
+                            <Pips count={meta.pips} className="difficulty-pips" pipClassName="difficulty-pip" />
                             <span className="difficulty-name">
                                 <span className="difficulty-name-accent">{meta.accent}</span>
                                 Sudoku

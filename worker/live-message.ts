@@ -1,3 +1,4 @@
+import { ButtonStyle, ComponentType } from 'discord-api-types/v10';
 import { and, eq } from 'drizzle-orm';
 import { getDb } from './db';
 import { puzzles, progress, players, liveMessages } from '../db/schema';
@@ -96,12 +97,12 @@ function entrySeconds(row: ParticipantRow, status: EntryStatus): number {
 function buildComponents(difficulty: string): MessageComponent[] {
     const others = (DIFFICULTIES as string[]).filter((d) => d !== difficulty);
     return [{
-        type: 1,
+        type: ComponentType.ActionRow,
         components: [
-            { type: 2, style: 1, label: 'Play along', custom_id: `play:${difficulty}` },
+            { type: ComponentType.Button, style: ButtonStyle.Primary, label: 'Play along', custom_id: `play:${difficulty}` },
             ...others.map((d) => ({
-                type: 2 as const,
-                style: 2,
+                type: ComponentType.Button as const,
+                style: ButtonStyle.Secondary,
                 label: `Try ${DIFFICULTY_LABEL[d] ?? d}`,
                 custom_id: `play:${d}`,
             })),

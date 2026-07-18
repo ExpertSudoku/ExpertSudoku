@@ -4,6 +4,24 @@
 
 export type Difficulty = 'medium' | 'expert' | 'hell';
 
+export type ApiError = {
+    error: string;
+};
+
+// Shared fetch -> JSON -> {error} mapping used by every endpoint helper.
+async function request<T>(path: string, init?: RequestInit): Promise<T | ApiError> {
+    const response = await fetch(path, init);
+    const body = await response.json();
+    if (!response.ok) {
+        return { error: (body as ApiError | null)?.error || `http-${response.status}` };
+    }
+    return body as T;
+}
+
+function sessionHeaders(sessionToken: string, extra: Record<string, string> = {}): Record<string, string> {
+    return { Authorization: `Bearer ${sessionToken}`, ...extra };
+}
+
 export type TodayPuzzle = {
     day: string;
     difficulty: Difficulty;
@@ -21,26 +39,12 @@ export type PuzzleMeta = {
     givens: Partial<Record<Difficulty, string>>;
 };
 
-export async function fetchPuzzleMeta(): Promise<PuzzleMeta | ApiError> {
-    const response = await fetch('/api/puzzle/meta');
-    const body = await response.json();
-    if (!response.ok) {
-        return { error: body?.error || `http-${response.status}` };
-    }
-    return body as PuzzleMeta;
+export function fetchPuzzleMeta(): Promise<PuzzleMeta | ApiError> {
+    return request<PuzzleMeta>('/api/puzzle/meta');
 }
 
-export type ApiError = {
-    error: string;
-};
-
-export async function fetchTodayPuzzle(difficulty: string): Promise<TodayPuzzle | ApiError> {
-    const response = await fetch(`/api/puzzle/today?difficulty=${encodeURIComponent(difficulty)}`);
-    const body = await response.json();
-    if (!response.ok) {
-        return { error: body?.error || `http-${response.status}` };
-    }
-    return body as TodayPuzzle;
+export function fetchTodayPuzzle(difficulty: string): Promise<TodayPuzzle | ApiError> {
+    return request<TodayPuzzle>(`/api/puzzle/today?difficulty=${encodeURIComponent(difficulty)}`);
 }
 
 export type ProgressState = {
@@ -49,15 +53,10 @@ export type ProgressState = {
     completedAt: number | null;
 };
 
-export async function fetchProgress(sessionToken: string, difficulty: string): Promise<ProgressState | ApiError> {
-    const response = await fetch(`/api/progress?difficulty=${encodeURIComponent(difficulty)}`, {
-        headers: { Authorization: `Bearer ${sessionToken}` },
+export function fetchProgress(sessionToken: string, difficulty: string): Promise<ProgressState | ApiError> {
+    return request<ProgressState>(`/api/progress?difficulty=${encodeURIComponent(difficulty)}`, {
+        headers: sessionHeaders(sessionToken),
     });
-    const body = await response.json();
-    if (!response.ok) {
-        return { error: body?.error || `http-${response.status}` };
-    }
-    return body as ProgressState;
 }
 
 export type ProgressSummary = {
@@ -67,15 +66,10 @@ export type ProgressSummary = {
 
 // Which of today's difficulties the session's player has completed - server
 // truth, so the Discord picker shows completions made on other devices too.
-export async function fetchProgressSummary(sessionToken: string): Promise<ProgressSummary | ApiError> {
-    const response = await fetch('/api/progress/summary', {
-        headers: { Authorization: `Bearer ${sessionToken}` },
+export function fetchProgressSummary(sessionToken: string): Promise<ProgressSummary | ApiError> {
+    return request<ProgressSummary>('/api/progress/summary', {
+        headers: sessionHeaders(sessionToken),
     });
-    const body = await response.json();
-    if (!response.ok) {
-        return { error: body?.error || `http-${response.status}` };
-    }
-    return body as ProgressSummary;
 }
 
 export type PostProgressBody = {
@@ -87,37 +81,24 @@ export type PostProgressBody = {
     completed: boolean;
 };
 
-export async function postProgress(
+export function postProgress(
     sessionToken: string,
     body: PostProgressBody,
     init?: RequestInit
 ): Promise<{ ok: true; completedAt: number | null } | ApiError> {
-    const response = await fetch('/api/progress', {
+    return request('/api/progress', {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${sessionToken}`,
-        },
+        headers: sessionHeaders(sessionToken, { 'Content-Type': 'application/json' }),
         body: JSON.stringify(body),
         ...init,
     });
-    const responseBody = await response.json();
-    if (!response.ok) {
-        return { error: responseBody?.error || `http-${response.status}` };
-    }
-    return responseBody;
 }
 
 // Self-service data deletion (Discord path only) - the session token is the
 // ownership proof, see worker/me.ts.
-export async function deleteMyData(sessionToken: string): Promise<{ ok: true } | ApiError> {
-    const response = await fetch('/api/me', {
+export function deleteMyData(sessionToken: string): Promise<{ ok: true } | ApiError> {
+    return request('/api/me', {
         method: 'DELETE',
-        headers: { Authorization: `Bearer ${sessionToken}` },
+        headers: sessionHeaders(sessionToken),
     });
-    const body = await response.json();
-    if (!response.ok) {
-        return { error: body?.error || `http-${response.status}` };
-    }
-    return body;
 }
