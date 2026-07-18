@@ -44,7 +44,7 @@
     fill: currentColor;
 }
 
-/* Absolute daily puzzle number, e.g. "#12" - dimmed, after the wordmark. */
+/* Absolute daily puzzle number, e.g. "No.12" - dimmed, after the wordmark. */
 .site-name .site-name-number {
     margin-left: 0.45em;
     font-weight: 500;
@@ -209,11 +209,6 @@
         grid-row: 1;
         grid-column: 1;
         font-size: 1.2rem;
-    }
-
-    /* The absolute puzzle number is nice-to-have; drop it for space. */
-    .site-name .site-name-number {
-        display: none;
     }
 
     .status-bar .theme-select {

@@ -8,7 +8,7 @@ export type TodayPuzzle = {
     day: string;
     difficulty: Difficulty;
     givens: string;
-    // Absolute daily puzzle number (#N since the launch epoch).
+    // Absolute daily puzzle number (No.N since the launch epoch).
     number: number;
     // Development builds only - the worker never sends this in production.
     solution?: string;

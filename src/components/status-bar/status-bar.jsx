@@ -36,7 +36,7 @@ function Wordmark ({ difficulty, puzzleNumber }) {
             <span className="site-name-accent">{mark.accent}</span>
             <span className="site-name-rest">{mark.rest}</span>
             {puzzleNumber
-                ? <span className="site-name-number">#{puzzleNumber}</span>
+                ? <span className="site-name-number">No.{puzzleNumber}</span>
                 : null}
         </span>
     );

@@ -167,10 +167,10 @@ async function announceStreak(
     const { difficulty, day, length, channelId, completers } = params;
     const label = DIFFICULTY_LABEL[difficulty] ?? difficulty;
     const mentions = completers.map((c) => `<@${c.playerId}>`).join(', ');
-    // "#N" is the absolute daily puzzle number (fixed epoch, +1 per UTC
+    // "No.N" is the absolute daily puzzle number (fixed epoch, +1 per UTC
     // day), NOT the streak length - both appear here deliberately.
     const content =
-        `🔥 **${label} streak: ${length} day${length === 1 ? '' : 's'}** — ${DIFFICULTY_NAME[difficulty] ?? difficulty} #${puzzleNumber(day)}\n`
+        `🔥 **${label} streak: ${length} day${length === 1 ? '' : 's'}** — ${DIFFICULTY_NAME[difficulty] ?? difficulty} No.${puzzleNumber(day)}\n`
         + `Solved today by ${mentions}`;
 
     const top5 = completers.slice(0, 5);
