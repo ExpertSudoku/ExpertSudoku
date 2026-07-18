@@ -7,6 +7,8 @@ import DifficultyPicker from "../difficulty-picker/difficulty-picker.jsx";
 // @ts-ignore
 import DiscordPlay from "./discord-play.jsx";
 // @ts-ignore
+import DeleteDataButton from "./delete-data-button.jsx";
+// @ts-ignore
 import {isDifficulty} from "../../../shared/difficulties.js";
 
 export type SessionInfo = {
@@ -85,6 +87,7 @@ export default function DiscordRoot(): any {
                 <div className="picker-screen-inner">
                     <h1 className="su-display">Pick your pain.</h1>
                     <DifficultyPicker onPick={setDifficulty} />
+                    <DeleteDataButton session={session} />
                 </div>
             </div>
         );

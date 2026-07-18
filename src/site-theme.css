@@ -247,3 +247,41 @@
     font-variant-numeric: tabular-nums;
     color: var(--su-ink);
 }
+
+/* Self-service data deletion on the Discord picker screen. */
+.delete-data {
+    margin-top: 2.5rem;
+    font-size: 0.85rem;
+    color: var(--su-dim);
+}
+
+.delete-data button {
+    font-family: var(--su-mono);
+    font-weight: 500;
+    font-size: 0.8rem;
+    padding: 0.3rem 0.7rem;
+    border: 1px solid var(--su-line);
+    border-radius: 8px;
+    background: var(--su-panel);
+    color: var(--su-dim);
+    cursor: pointer;
+}
+
+.delete-data button:hover {
+    color: var(--su-ink);
+    border-color: var(--su-hell);
+}
+
+.delete-data button.delete-data-confirm {
+    color: #ffffff;
+    background: var(--su-hell);
+    border-color: var(--su-hell);
+}
+
+.delete-data.done {
+    color: var(--su-medium);
+}
+
+.delete-data.error {
+    color: var(--su-hell);
+}

@@ -24,7 +24,7 @@ export async function mintSession(env: Env, claims: SessionClaims): Promise<stri
         iat: now,
         exp: now + SESSION_TTL_SECONDS,
     };
-    return sign(payload, env.SESSION_SECRET);
+    return sign(payload, env.SESSION_SECRET, 'HS256');
 }
 
 export type SessionVariables = {
@@ -42,7 +42,10 @@ export const requireSession = createMiddleware<{ Bindings: Env; Variables: Sessi
             return context.json({ error: 'unauthorized' }, 401);
         }
         try {
-            const payload = (await verify(match[1], context.env.SESSION_SECRET)) as unknown as SessionJwtPayload;
+            // hono >= 4.12 requires the algorithm to be passed explicitly -
+            // without it, verify() throws JwtAlgorithmRequired and every
+            // session would be rejected as unauthorized.
+            const payload = (await verify(match[1], context.env.SESSION_SECRET, 'HS256')) as unknown as SessionJwtPayload;
             context.set('session', {
                 sub: payload.sub,
                 chan: payload.chan,

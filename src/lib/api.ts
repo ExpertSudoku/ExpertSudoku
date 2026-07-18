@@ -87,3 +87,17 @@ export async function postProgress(
     }
     return responseBody;
 }
+
+// Self-service data deletion (Discord path only) - the session token is the
+// ownership proof, see worker/me.ts.
+export async function deleteMyData(sessionToken: string): Promise<{ ok: true } | ApiError> {
+    const response = await fetch('/api/me', {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${sessionToken}` },
+    });
+    const body = await response.json();
+    if (!response.ok) {
+        return { error: body?.error || `http-${response.status}` };
+    }
+    return body;
+}

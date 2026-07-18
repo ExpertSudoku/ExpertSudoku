@@ -6,11 +6,13 @@ import {upsertPlayer} from "./players";
 import {mintSession} from "./session";
 import {runDailyStreaks} from "./streaks";
 import {interactionRoutes, consumePendingDifficulty} from "./interactions";
+import {meRoutes} from "./me";
 const app = new Hono<{ Bindings: Env }>();
 
 app.route('/api/puzzle', puzzleRoutes);
 app.route('/api/progress', progressRoutes);
 app.route('/api/interactions', interactionRoutes);
+app.route('/api/me', meRoutes);
 
 app.post("/api/token", async (context) => {
     const request = await context.req.json() as {

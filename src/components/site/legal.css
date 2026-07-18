@@ -46,3 +46,28 @@
     color: var(--su-expert);
     font-weight: 600;
 }
+
+.legal-column h2 {
+    font-family: var(--su-mono);
+    font-weight: 700;
+    font-size: 1.05rem;
+    letter-spacing: -0.01em;
+    color: var(--su-ink);
+    margin: 1.75rem 0 0.5rem;
+}
+
+.legal-column ul {
+    margin: 0 0 1rem;
+    padding-left: 1.25rem;
+    color: var(--su-dim);
+}
+
+.legal-column li {
+    margin-bottom: 0.35rem;
+}
+
+.legal-column li strong,
+.legal-column p strong,
+.legal-column a {
+    color: var(--su-ink);
+}
