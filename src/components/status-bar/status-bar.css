@@ -6,15 +6,19 @@
 .status-bar {
     box-sizing: border-box;
     position: fixed;
-    top: calc(var(--dev-banner-h, 0rem) + var(--discord-top-inset, 0rem));
+    top: var(--dev-banner-h, 0rem);
     left: 0;
     width: 100%;
-    height: var(--header-height);
+    /* On Discord mobile the bar EXTENDS upward by --discord-top-inset
+     * (extra height + top padding) rather than sitting below it - the strip
+     * under Discord's floating controls is bar background, so scrolled
+     * content never shows through it. */
+    height: calc(var(--header-height) + var(--discord-top-inset, 0rem));
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 1rem;
-    padding: 0 1.25rem;
+    padding: var(--discord-top-inset, 0rem) 1.25rem 0;
     font-family: var(--su-mono, monospace), serif;
     color: var(--su-ink);
     background: var(--su-night);
@@ -198,7 +202,8 @@
         align-items: center;
         row-gap: 0.5rem;
         column-gap: 0.4rem;
-        padding: 0.5rem 1rem;
+        /* Keep the discord-mobile inset on top (see the base rule). */
+        padding: calc(0.5rem + var(--discord-top-inset, 0rem)) 1rem 0.5rem;
     }
 
     .status-bar-controls {

@@ -217,6 +217,9 @@ html {
     height: 100%;
 }
 
+/* NOTE: no `touch-action: none` here - it would block touch scrolling for
+ * every overflowing screen (picker, solved panel, legal pages) on mobile.
+ * The game's swipe-to-select sets it on .sudoku-grid instead. */
 body {
     margin: 0;
     padding: 0;
@@ -224,7 +227,6 @@ body {
     height: 100%;
     font-family: var(--app-font-family);
     font-size: 1.2rem;
-    touch-action: none;
 }
 
 #root {

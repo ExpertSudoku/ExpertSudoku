@@ -70,6 +70,12 @@
     cursor: pointer;
 }
 
+/* Fast taps on keys, no double-tap zoom (body no longer blankets the app
+ * with touch-action: none). */
+.vkbd {
+    touch-action: manipulation;
+}
+
 /* The number pad fades out while the game is paused. Opacity (not
  * display) so it keeps its layout slot - the grid doesn't re-centre when
  * pausing - and the fade matches the grid's pause cross-fade timing. */

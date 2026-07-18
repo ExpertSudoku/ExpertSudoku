@@ -184,6 +184,13 @@ text.inner-pencil,
     to   { fill: var(--solved-fill-color); }
 }
 
+/* Swiping across cells is multi-select, never page panning - this is the
+ * guarantee behind the grid's touch handlers (body deliberately does NOT
+ * set touch-action, so every other screen stays touch-scrollable). */
+.sudoku-grid {
+    touch-action: none;
+}
+
 /* Cells are click targets (select / swipe-select). */
 .cell-cover,
 .cell-drag-cover {
