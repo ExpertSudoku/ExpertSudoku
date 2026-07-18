@@ -17,8 +17,11 @@ export async function fetchAndRetry(
 
 		// If there's a 429 error code, retry after retry_after seconds
 		// https://discord.com/developers/docs/topics/rate-limits#rate-limits
+		// Discord sends the standard HTTP `Retry-After` header (not `retry_after`
+		// - fetch's Headers lookup is case-insensitive, but the name itself was
+		// simply wrong before).
 		if (response.status === 429 && nRetries > 0) {
-			const retryAfter = Number(response.headers.get('retry_after'));
+			const retryAfter = Number(response.headers.get('Retry-After'));
 			if (Number.isNaN(retryAfter)) {
 				return response;
 			}

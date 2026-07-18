@@ -36,6 +36,9 @@ path.selection-outline {
 }
 
 .cell-bg .color-code-1 { fill: var(--cell-bg-1-fill-color); }
+/* Given cells get a slightly raised tile tone - the "blocker" cells from
+ * the brand imagery (only when not user-coloured). */
+.cell-bg.given .color-code-1 { fill: var(--given-cell-fill-color); }
 .cell-bg .color-code-2 { fill: var(--cell-bg-2-fill-color); }
 .cell-bg .color-code-3 { fill: var(--cell-bg-3-fill-color); }
 .cell-bg .color-code-4 { fill: var(--cell-bg-4-fill-color); }
@@ -75,7 +78,7 @@ text.digit.error {
 
 text.digit {
     fill: var(--digit-color);
-    font-family: Arial, Helvetica, sans-serif;
+    font-family: var(--su-mono, monospace);
 }
 
 .solved text.digit {
@@ -121,7 +124,7 @@ text.inner-pencil,
 .outer-pencil text,
 .simple-pencil text {
     fill: var(--pencil-mark-color);
-    font-family: Arial, Helvetica, sans-serif;
+    font-family: var(--su-mono, monospace);
 }
 
 .sudoku-grid.hint .cell-bg {
@@ -179,4 +182,41 @@ text.inner-pencil,
     60%  { fill: #ff9b5b; }
     70%  { fill: #ffff9a; }
     to   { fill: var(--solved-fill-color); }
+}
+
+/* Cells are click targets (select / swipe-select). */
+.cell-cover,
+.cell-drag-cover {
+    cursor: pointer;
+}
+
+/* Paused: the whole grid is hidden - every cell renders as a uniform empty
+ * tile (no digits, no givens, no colours) with a centred label. */
+.cell-bg-paused {
+    fill: var(--cell-bg-1-fill-color);
+}
+
+.paused-label {
+    fill: var(--given-digit-color);
+    font-family: var(--su-mono, monospace);
+    font-weight: 700;
+}
+
+/* The Continue button rendered under the "Paused" label. */
+.paused-continue {
+    cursor: pointer;
+}
+
+.paused-continue rect {
+    fill: var(--button-bg-color);
+}
+
+.paused-continue:hover rect {
+    opacity: 0.88;
+}
+
+.paused-continue text {
+    fill: var(--button-text-color);
+    font-family: var(--su-mono, monospace);
+    font-weight: 700;
 }

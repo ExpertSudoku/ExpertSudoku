@@ -11,7 +11,9 @@ export default defineConfig({
 			clientPort: 443,
 		},
         allowedHosts: [
-            'hurensohn.ihatemy.live'
+            'hurensohn.ihatemy.live',
+			'5dff-109-91-157-17.ngrok-free.app',
+			'draw-pro-behalf-detect.trycloudflare.com'
         ]
 	},
 });

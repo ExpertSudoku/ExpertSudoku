@@ -20,17 +20,20 @@ const inputModeFromHotKey = {
     v: 'color',
 }
 
-function createInitialGrid(progressTracker) {
+function createInitialGrid(progressTracker, initialDigits, difficultyLevel, savedState, stateAdapter) {
     let grid = newSudokuModel({
-        initialDigits: '480002006673400002051780009040000003162800094030164080500049300000538020300000940',
+        initialDigits,
+        difficultyLevel,
         onPuzzleStateChange: grid => {
-            console.log(grid)
             document.body.dataset.currentSnapshot = grid.get('currentSnapshot');
             modelHelpers.persistPuzzleState(grid);
-            
+            if (stateAdapter) {
+                stateAdapter.save(modelHelpers.exportPuzzleState(grid), grid);
+            }
+
             if (progressTracker) {
                 progressTracker.onGridChange(grid);
-                
+
                 if (grid.get('solved')) {
                     progressTracker.sendCompletionUpdate(grid);
                 }
@@ -38,9 +41,9 @@ function createInitialGrid(progressTracker) {
         }
     });
 
-    const puzzleStateKey = 'save-' + grid.get('initialDigits')
-    grid = modelHelpers.restoreFromPuzzleState(grid, puzzleStateKey);
-
+    if (savedState && savedState.initialDigits === grid.get('initialDigits')) {
+        grid = modelHelpers.restoreFromPuzzleState(grid, savedState);
+    }
 
     document.body.dataset.initialDigits = grid.get('initialDigits');
     return grid;
@@ -165,10 +168,6 @@ function docKeyDownHandler (e, modalActive, setGrid, solved, inputMode) {
     }
     else if (e.key === ".") {
         setGrid((grid) => modelHelpers.updateSelectedCells(grid, 'pencilMarksToInner'));
-        return;
-    }
-    else if (e.key === "?") {
-        setGrid((grid) => modelHelpers.showHintModal(grid));
         return;
     }
     else if (keyName === "Escape") {
@@ -404,9 +403,6 @@ function dispatchMenuAction(action, setGrid) {
     if (action === 'show-help-page') {
         setGrid((grid) => modelHelpers.showHelpPage(grid));
     }
-    else if (action === 'show-about-modal') {
-        setGrid((grid) => modelHelpers.showAboutModal(grid));
-    }
     else if (action === 'restart-puzzle') {
         setGrid((grid) => modelHelpers.confirmRestart(grid));
     }
@@ -436,7 +432,7 @@ function getDimensions(winSize) {
     return dim;
 }
 
-function App() {
+function App({ initialDigits, difficultyLevel, savedState, stateAdapter, onExit }) {
     const [progressTracker] = useState(() => {
         const progressParams = parseProgressParams();
         return createProgressTracker(
@@ -448,12 +444,15 @@ function App() {
             }
         );
     });
-    
-    const [grid, setGrid] = useState(() => createInitialGrid(progressTracker));
+
+    const [grid, setGrid] = useState(
+        () => createInitialGrid(progressTracker, initialDigits, difficultyLevel, savedState, stateAdapter)
+    );
     const settings = grid.get('settings');
     let showTimer = settings[SETTINGS.showTimer];
     const intervalStartTime = grid.get('intervalStartTime');
     const endTime = grid.get('endTime');
+    const pausedAt = grid.get('pausedAt');
     const solved = grid.get('solved');
     const mode = grid.get('mode');
     const inputMode = grid.get('tempInputMode') || grid.get('inputMode');
@@ -466,6 +465,8 @@ function App() {
     const inputHandler = useCallback(e => inputEventHandler(e, setGrid, inputMode), [inputMode]);
     const modalHandler = useCallback(a => dispatchModalAction(a, setGrid), []);
     const menuHandler = useCallback(a => dispatchMenuAction(a, setGrid), []);
+    const pauseHandler = useCallback(() => setGrid(g => modelHelpers.pauseTimer(g)), []);
+    const resumeHandler = useCallback(() => setGrid(g => modelHelpers.resumeTimer(g)), []);
 
     useEffect(
         () => {
@@ -518,6 +519,9 @@ function App() {
     if (solved) {
         classes.push('solved');
     }
+    if (pausedAt !== undefined) {
+        classes.push('paused');
+    }
 
     const modal = (
         <ModalContainer
@@ -535,6 +539,10 @@ function App() {
                 startTime={grid.get('startTime')}
                 intervalStartTime={intervalStartTime}
                 endTime={endTime}
+                pausedAt={pausedAt}
+                onPause={pauseHandler}
+                onResume={resumeHandler}
+                onExit={onExit}
                 menuHandler={menuHandler}
             />
             <div className="ui-elements">
@@ -545,6 +553,7 @@ function App() {
                     mouseDownHandler={mouseDownHandler}
                     mouseOverHandler={mouseOverHandler}
                     inputHandler={inputHandler}
+                    onResume={resumeHandler}
                 />
                 <div>
                     {

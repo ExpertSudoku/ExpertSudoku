@@ -1,0 +1,213 @@
+/*
+ * ExpertSudoku site shell theme.
+ *
+ * Scope: the screens AROUND the game (landing, difficulty picker, legal
+ * pages, completion screen) - the sudoku app itself keeps its own theme
+ * variables. Tokens are prefixed --su- so they can't collide with the
+ * game's theme system.
+ *
+ * The palette is the product's own: it matches the live board PNGs posted
+ * to Discord (worker/render/board-image.ts) - #242424 panel, #2f2f2f empty
+ * cells, #666 givens, blurple fills, and the three difficulty colours.
+ * Fonts are self-hosted because the Discord iframe CSP blocks third-party
+ * font CDNs.
+ */
+
+@font-face {
+    font-family: 'Inter var';
+    font-style: normal;
+    font-weight: 100 900;
+    font-display: swap;
+    src: url('./fonts/Inter-var-latin.woff2') format('woff2');
+}
+
+@font-face {
+    font-family: 'Spline Sans Mono var';
+    font-style: normal;
+    font-weight: 300 700;
+    font-display: swap;
+    src: url('./fonts/SplineSansMono-var-latin.woff2') format('woff2');
+}
+
+:root {
+    --su-night: #1b1b1e;      /* page */
+    --su-panel: #242424;      /* card / brand surface (= board image bg) */
+    --su-cell: #2f2f2f;       /* empty cell */
+    --su-given: #666666;      /* given cell */
+    --su-line: #343438;
+    --su-ink: #e6e6e6;
+    --su-dim: #8a8a8a;
+    --su-blurple: #5865f2;
+    --su-medium: #23a55a;
+    --su-expert: #f0b232;
+    --su-hell: #f23f43;
+
+    --su-mono: 'Spline Sans Mono var', ui-monospace, 'Cascadia Code', Menlo, Consolas, monospace;
+    --su-body: 'Inter var', system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+    /* Height of the in-game header (status bar); #root reserves this much
+     * top padding and .site-page swallows it again on shell screens. */
+    --header-height: 5rem;
+}
+
+/* Light theme (documentElement class set by src/lib/theme.js and the inline
+ * index.html script). Same structure, inverted surfaces; the four accent
+ * colours stay identical. */
+:root.light {
+    --su-night: #f4f4f5;
+    --su-panel: #ffffff;
+    --su-cell: #e8e8ea;
+    --su-given: #b0b0b6;
+    --su-line: #e0e0e3;
+    --su-ink: #1b1b1e;
+    --su-dim: #6e6e74;
+}
+
+/* Full-height dark page wrapper shared by every shell screen. The negative
+ * margin swallows #root's padding-top (reserved for the game's fixed
+ * status bar, which shell screens don't have). */
+.site-page {
+    box-sizing: border-box;
+    min-height: 100dvh;
+    margin-top: calc(-1 * var(--header-height));
+    background: var(--su-night);
+    color: var(--su-ink);
+    font-family: var(--su-body);
+    font-weight: 400;
+    line-height: 1.55;
+}
+
+.site-page *,
+.site-page *::before,
+.site-page *::after {
+    box-sizing: inherit;
+}
+
+.su-display {
+    font-family: var(--su-mono);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--su-ink);
+}
+
+.site-page a {
+    color: var(--su-ink);
+    text-decoration-color: var(--su-dim);
+    text-underline-offset: 3px;
+}
+
+.site-page a:hover {
+    text-decoration-color: var(--su-blurple);
+}
+
+.site-page :focus-visible {
+    outline: 2px solid var(--su-blurple);
+    outline-offset: 2px;
+    border-radius: 4px;
+}
+
+/* Loading / error notices inside shell screens. */
+.web-play-message {
+    max-width: 30rem;
+    margin: 4rem auto;
+    padding: 1.5rem;
+    text-align: center;
+    color: var(--su-dim);
+    font-family: var(--su-body);
+}
+
+.web-play-message strong {
+    color: var(--su-ink);
+}
+
+/* Completion screen (Discord path): time + next-difficulty picker. */
+.completion-screen {
+    padding: 3rem 1.5rem 4rem;
+}
+
+.completion-screen .completion-card {
+    max-width: 34rem;
+    margin: 0 auto;
+}
+
+.completion-eyebrow {
+    font-family: var(--su-mono);
+    font-weight: 500;
+    font-size: 0.8rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--su-medium);
+    margin: 0 0 0.75rem;
+}
+
+.completion-title {
+    font-family: var(--su-mono);
+    font-weight: 700;
+    font-size: clamp(1.6rem, 5vw, 2.2rem);
+    letter-spacing: -0.02em;
+    margin: 0;
+}
+
+.completion-time {
+    color: var(--su-blurple);
+}
+
+.completion-next {
+    margin: 2.25rem 0 0.75rem;
+    font-size: 0.95rem;
+    color: var(--su-dim);
+}
+
+/* Discord post-auth difficulty picker screen. */
+.picker-screen {
+    padding: 3rem 1.5rem 4rem;
+}
+
+.picker-screen-inner {
+    max-width: 34rem;
+    margin: 0 auto;
+}
+
+.picker-screen h1 {
+    font-size: clamp(1.6rem, 5vw, 2.2rem);
+    margin: 0 0 1.5rem;
+}
+
+/* Light / Auto / Dark segmented selector (landing masthead). */
+.theme-select {
+    display: flex;
+    gap: 2px;
+    padding: 2px;
+    border: 1px solid var(--su-line);
+    border-radius: 8px;
+    background: var(--su-panel);
+}
+
+.theme-select button {
+    font-family: var(--su-mono);
+    font-weight: 500;
+    font-size: 0.72rem;
+    letter-spacing: 0.04em;
+    padding: 0.25rem 0.55rem;
+    border: none;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--su-dim);
+    cursor: pointer;
+}
+
+.theme-select button:hover {
+    color: var(--su-ink);
+}
+
+.theme-select button[aria-pressed="true"] {
+    background: var(--su-blurple);
+    color: #ffffff;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .site-page * {
+        transition: none !important;
+        animation-duration: 0.01ms !important;
+    }
+}

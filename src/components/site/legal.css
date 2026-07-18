@@ -1,0 +1,48 @@
+.legal-page {
+    display: flex;
+    justify-content: center;
+    padding: 2.5rem 1.5rem 4rem;
+}
+
+.legal-column {
+    width: 100%;
+    max-width: 34rem;
+}
+
+.legal-column h1 {
+    font-size: clamp(1.6rem, 5vw, 2.1rem);
+    margin: 1.75rem 0 1.25rem;
+}
+
+.legal-column p {
+    margin: 0 0 1rem;
+    color: var(--su-dim);
+}
+
+.legal-column p strong {
+    color: var(--su-ink);
+}
+
+.legal-back-link {
+    display: inline-block;
+    font-family: var(--su-mono);
+    font-weight: 500;
+    font-size: 0.85rem;
+    color: var(--su-dim);
+    text-decoration: none;
+}
+
+.legal-back-link:hover {
+    color: var(--su-ink);
+}
+
+/* Two classes so this outranks the `.legal-column p` colour above. */
+.legal-column .legal-todo {
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--su-line);
+    border-left: 3px solid var(--su-expert);
+    border-radius: 10px;
+    background: var(--su-panel);
+    color: var(--su-expert);
+    font-weight: 600;
+}

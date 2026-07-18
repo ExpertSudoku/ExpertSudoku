@@ -2,11 +2,9 @@ import {
     MODAL_TYPE_CHECK_RESULT,
     MODAL_TYPE_CONFIRM_RESTART,
     MODAL_TYPE_HELP,
-    MODAL_TYPE_ABOUT,
     MODAL_TYPE_CONFIRM_CLEAR_COLOR_HIGHLIGHTS,
 } from '../../lib/modal-types';
 
-import ModalAbout from './modal-about';
 import ModalConfirmRestart from './modal-confirm-restart';
 import ModalConfirmClearColorHighlights from './modal-confirm-clear-color-highlights'
 import ModalCheckResult from './modal-check-result';
@@ -34,10 +32,7 @@ export default function ModalContainer({modalState, modalHandler, menuHandler}) 
             }
         }
     }
-    if (modalState.modalType === MODAL_TYPE_ABOUT) {
-        content = <ModalAbout modalHandler={modalHandler} />;
-    }
-    else if (modalState.modalType === MODAL_TYPE_CONFIRM_RESTART) {
+    if (modalState.modalType === MODAL_TYPE_CONFIRM_RESTART) {
         content = <ModalConfirmRestart modalHandler={modalHandler} solved={modalState.solved} />;
     }
     else if (modalState.modalType === MODAL_TYPE_CONFIRM_CLEAR_COLOR_HIGHLIGHTS) {

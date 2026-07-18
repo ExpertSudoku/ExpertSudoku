@@ -1,6 +1,7 @@
 import { List, Map, Range, Set } from './not-mutable';
 import { cellSet, cellProp } from './sudoku-cell-sets';
 import { expandPuzzleDigits } from './string-utils';
+import { findSolutions, tryCandidates, findCandidatesForCell } from '../../shared/solver.js';
 
 import {
     MODAL_TYPE_INVALID_INITIAL_DIGITS,
@@ -8,13 +9,11 @@ import {
     MODAL_TYPE_CONFIRM_RESTART,
     MODAL_TYPE_CONFIRM_CLEAR_COLOR_HIGHLIGHTS,
     MODAL_TYPE_HELP,
-    MODAL_TYPE_ABOUT,
 } from './modal-types';
-import {AccessTokenContext} from "../components/app/login-wrapper.js";
-import {useContext} from "react";
 
 export const SETTINGS = {
     darkMode: "dark-mode",
+    showTimer: "show-timer",
     simplePencilMarking: 'simple-pencil-marking',
     outlineSelection: "outline-selection",
     highlightMatches: "highlight-matches",
@@ -79,7 +78,7 @@ export function newSudokuModel({initialDigits, difficultyLevel, onPuzzleStateCha
         solved: false,
         mode,
         settings,
-        difficultyLevel: (difficultyLevel || '').replace(/[^1-4]/g, ''),
+        difficultyLevel: difficultyLevel || '',
         inputMode: 'digit',
         tempInputMode: undefined,
         startTime: startTime,           // should never change
@@ -105,7 +104,9 @@ export function newSudokuModel({initialDigits, difficultyLevel, onPuzzleStateCha
 };
 
 function actionsBlocked(grid) {
-    return grid.get('solved') || (grid.get('modalState') !== undefined);
+    return grid.get('solved')
+        || (grid.get('modalState') !== undefined)
+        || (grid.get('pausedAt') !== undefined);
 }
 
 export const modelHelpers = {
@@ -165,12 +166,9 @@ export const modelHelpers = {
     },
 
     syncSettingsToDom: (settings) => {
-        if (settings[SETTINGS.darkMode]) {
-            window.document.body.classList.add('dark');
-        }
-        else {
-            window.document.body.classList.remove('dark');
-        }
+        // Note: the 'dark' body class is owned by src/lib/theme.js (the
+        // light/dark/auto selector), NOT by game settings - the old
+        // SETTINGS.darkMode key is ignored.
         if (settings[SETTINGS.playVictoryAnimation]) {
             window.document.body.classList.add('animate');
         }
@@ -365,89 +363,13 @@ export const modelHelpers = {
         return result;
     },
 
-    findCandidatesForCell: (digits, i) => {
-        const candidates = '0123456789'.split('');
-        const digitBase = '0'.charCodeAt(0);
-        const r = Math.floor(i / 9) + 1;
-        const c = (i % 9) + 1;
-        const b = Math.floor((r - 1) / 3) * 3 + Math.floor((c - 1) / 3) + 1;
-        [ cellSet.row[r], cellSet.col[c], cellSet.box[b] ].flat().forEach(j => {
-            const d = digits[j] || '0';
-            if (d !== '0') {
-                const index = d.charCodeAt(0) - digitBase;
-                candidates[index] = '0';
-            }
-        });
-        return candidates.filter(d => d !== '0');
-    },
-
-    findSolutions: (digits, userOpt) => {
-        const opt = {findAll: false, ...userOpt};
-        const state = {
-            findAll: opt.findAll,
-            solutions: [],
-            iterations: 0,
-            maxTime: Date.now() + (opt.timeout || 3000),
-        };
-        const givensCount = digits.filter(d => d !== '0').length;
-        if (givensCount < 17) {
-            return {
-                solutions: [],
-                uniqueSolution: false,
-                error: 'This arrangement may not have a unique solution',
-            };
-        }
-        modelHelpers.tryCandidates(digits, state, 0);
-        const solutions = state.solutions;
-        const result = {
-            solutions: solutions,
-            uniqueSolution: false,
-        };
-        if (solutions.length === 1  && !state.timedOut) {
-            result.uniqueSolution = true;
-            result.finalDigits = solutions[0];
-        }
-        else if (solutions.length > 1 ) {
-            result.error = 'This arrangement does not have a unique solution';
-        }
-        else if (state.timedOut) {
-            result.error = 'The solver timed out while checking for a unique solution';
-        }
-        else {
-            result.error = 'This arrangement does not have a solution';
-        }
-        return result;
-    },
-
-    tryCandidates: (digits, state, cellIndex) => {
-        state.iterations++;
-        if (cellIndex === 81) {
-            state.solutions.push(digits.join(''));
-            return;
-        }
-        if (state.timedOut) {
-            return;
-        }
-        if ((state.iterations % 10000) === 0) {
-            if (Date.now() > state.maxTime) {
-                state.timedOut = true;
-                return;
-            }
-        }
-        if (digits[cellIndex] !== '0') {
-            modelHelpers.tryCandidates(digits, state, cellIndex + 1);
-            return;
-        }
-        modelHelpers.findCandidatesForCell(digits, cellIndex).forEach(d => {
-            if (!state.findAll && state.solutions.length > 1) {
-                return;
-            }
-            digits[cellIndex] = d;
-            modelHelpers.tryCandidates(digits, state, cellIndex + 1);
-        });
-        digits[cellIndex] = '0';
-        return;
-    },
+    // findCandidatesForCell/findSolutions/tryCandidates moved to shared/solver.js
+    // (Phase 2a) so the seed-generation script can import a dependency-free
+    // solver from plain Node. Kept here as thin re-exports for any external
+    // callers of modelHelpers.*.
+    findCandidatesForCell,
+    findSolutions,
+    tryCandidates,
 
     pushNewSnapshot: (grid, snapshotBefore) => {
         const snapshotAfter = modelHelpers.toSnapshotString(grid);
@@ -655,25 +577,12 @@ export const modelHelpers = {
         });
     },
 
-    showAboutModal: (grid) => {
-        return grid.set('modalState', {
-            modalType: MODAL_TYPE_ABOUT,
-            escapeAction: 'close',
-         });
-    },
-
     applyModalAction: (grid, args) => {
         const action = args.action || args;
         const oldModalState = grid.get('modalState');
         grid = grid.set('modalState', undefined);
         if (action === 'cancel' || action === 'close') {
             return grid;
-        }
-        else if (action === 'show-paste-modal') {
-            return modelHelpers.showPasteModal(grid);
-        }
-        else if (action === 'show-qr-modal') {
-            return modelHelpers.showQRModal(grid, args.puzzleURL);
         }
         else if (action === 'restart-confirmed') {
             return modelHelpers.applyRestart(grid);
@@ -687,52 +596,82 @@ export const modelHelpers = {
         return grid;
     },
 
+    exportPuzzleState: (grid) => {
+        const pausedAt = grid.get('pausedAt');
+        const elapsedTime = (pausedAt || Date.now()) - grid.get('intervalStartTime');
+        const puzzleState = {
+            initialDigits: grid.get('initialDigits'),
+            difficultyLevel: grid.get('difficultyLevel'),
+            startTime: grid.get('startTime'),
+            elapsedTime: elapsedTime,
+            isPaused: !!pausedAt,
+            undoList: grid.get('undoList').toArray(),
+            redoList: grid.get('redoList').toArray(),
+            currentSnapshot: grid.get('currentSnapshot'),
+            hintsUsed: grid.get('hintsUsed').toArray(),
+            lastUpdatedTime: Date.now(),
+        };
+        const difficultyRating = grid.get('difficultyRating');
+        if (difficultyRating) {
+            puzzleState.difficultyRating = difficultyRating;
+        }
+        return puzzleState;
+    },
+
     persistPuzzleState: (grid) => {
         if (!modelHelpers.getSetting(grid, SETTINGS.autoSave)) {
             return;
         }
         const solved = grid.get('solved');
-        const initialDigits = grid.get('initialDigits');
         const puzzleStateKey = grid.get("puzzleStateKey");
         if (solved) {
             localStorage.removeItem(puzzleStateKey);
+            return;
         }
-        else {
-            // Don't bother saving if there's no progress to save yet
-            const currentSnapshot = grid.get('currentSnapshot');
-            const previousSave = localStorage.getItem(puzzleStateKey) || '';
-            if (previousSave === '') {
-                if (currentSnapshot === '') {
-                    return;
-                }
-            }
-            const elapsedTime = (grid.get('pausedAt') || Date.now()) - grid.get('intervalStartTime');
-            const puzzleState = {
-                initialDigits,
-                difficultyLevel: grid.get('difficultyLevel'),
-                startTime: grid.get('startTime'),
-                elapsedTime: elapsedTime,
-                undoList: grid.get('undoList').toArray(),
-                redoList: grid.get('redoList').toArray(),
-                currentSnapshot: currentSnapshot,
-                hintsUsed: grid.get('hintsUsed').toArray(),
-                lastUpdatedTime: Date.now(),
-            };
-            const difficultyRating = grid.get('difficultyRating');
-            if (difficultyRating) {
-                puzzleState.difficultyRating = difficultyRating;
-            }
-            const puzzleStateJson = JSON.stringify(puzzleState);
-            const accessToken = useContext(AccessTokenContext)
-            fetch('/api/save', {
-                method: 'POST',
-                body: puzzleStateJson,
-                headers: {
-                    'Authorization': accessToken
-                }
-            })
-            localStorage.setItem(puzzleStateKey, puzzleStateJson);
+        // Don't bother saving if there's no progress to save yet
+        const currentSnapshot = grid.get('currentSnapshot');
+        const previousSave = localStorage.getItem(puzzleStateKey) || '';
+        if (previousSave === '' && currentSnapshot === '') {
+            return;
         }
+        const puzzleState = modelHelpers.exportPuzzleState(grid);
+        localStorage.setItem(puzzleStateKey, JSON.stringify(puzzleState));
+    },
+
+    loadLocalPuzzleState: (puzzleStateKey) => {
+        try {
+            const puzzleStateJson = localStorage.getItem(puzzleStateKey);
+            if (!puzzleStateJson) {
+                return null;
+            }
+            return JSON.parse(puzzleStateJson);
+        } catch (e) {
+            localStorage.removeItem(puzzleStateKey);
+            return null;
+        }
+    },
+
+    pauseTimer: (grid) => {
+        if (grid.get('solved') || grid.get('mode') !== 'solve' || grid.get('pausedAt') !== undefined) {
+            return grid;
+        }
+        grid = grid.set('pausedAt', Date.now());
+        modelHelpers.notifyPuzzleStateChange(grid);
+        return grid;
+    },
+
+    resumeTimer: (grid) => {
+        const pausedAt = grid.get('pausedAt');
+        if (pausedAt === undefined) {
+            return grid;
+        }
+        const intervalStartTime = grid.get('intervalStartTime');
+        grid = grid.merge({
+            intervalStartTime: Date.now() - (pausedAt - intervalStartTime),
+            pausedAt: undefined,
+        });
+        modelHelpers.notifyPuzzleStateChange(grid);
+        return grid;
     },
 
     handleVisibilityChange: (grid, isVisible) => {
@@ -758,19 +697,14 @@ export const modelHelpers = {
         return grid;
     },
 
-    restoreFromPuzzleState: (grid, puzzleStateKey) => {
-        let puzzleState;
-        try {
-            const puzzleStateJson = localStorage.getItem(puzzleStateKey);
-            puzzleState =  JSON.parse(puzzleStateJson);
-            if (puzzleState === null) {
-                return grid
-            }
-        } catch (e) {
-            localStorage.removeItem(puzzleStateKey);
+    // Signature change (Phase 2b): takes the already-parsed puzzleState object
+    // (see loadLocalPuzzleState / the server progress payload), not a
+    // localStorage key. Callers are responsible for loading it.
+    restoreFromPuzzleState: (grid, puzzleState) => {
+        if (!puzzleState) {
             return grid;
         }
-        const {initialDigits, currentSnapshot} = puzzleState;
+        const {initialDigits, currentSnapshot, isPaused} = puzzleState;
         grid = grid.merge({
             mode: 'solve',
             initialDigits,
@@ -780,7 +714,7 @@ export const modelHelpers = {
             undoList: List(puzzleState.undoList),
             redoList: List(puzzleState.redoList),
             hintsUsed: Set(puzzleState.hintsUsed || []),
-            pausedAt: undefined,
+            pausedAt: isPaused ? Date.now() : undefined,
             modalState: undefined,
         });
         grid = modelHelpers.setGivenDigits(grid, initialDigits, {fromPuzzleState: true});

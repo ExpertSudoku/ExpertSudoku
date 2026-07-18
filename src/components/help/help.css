@@ -20,6 +20,7 @@
     width: 1.3em;
     height: 1.3em;
     color: var(--status-bar-button-text-color);
+    cursor: pointer;
     background-color: var(--status-bar-button-hover-color);
     border-radius: 0.1em;
 }

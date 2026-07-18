@@ -6,14 +6,15 @@ import { SETTINGS } from '../../lib/sudoku-model.js';
 
 import calculateGridDimensions from './grid-dimensions';
 
-import SudokuCellPaused from './sudoku-cell-paused';
 import SudokuCellBackground from './sudoku-cell-background';
 import SudokuCellRegionOutline from './sudoku-cell-region-outline'
 import SudokuCellPencilMarks from './sudoku-cell-pencil-marks';
 import SudokuCellDigit from './sudoku-cell-digit';
 import SudokuCellCover from './sudoku-cell-cover';
 
-import GridLines from './grid-lines.jsx';
+// Note: GridLines is intentionally NOT used for the main grid any more -
+// block structure is conveyed by the wider gaps between cell tiles (see
+// grid-dimensions.jsx blockGap). The mini grid (saved puzzles) still uses it.
 
 
 function layerCellBackgrounds ({cells, cellSize, dim, matchDigit, simplePencilMarking}) {
@@ -24,6 +25,8 @@ function layerCellBackgrounds ({cells, cellSize, dim, matchDigit, simplePencilMa
                 cell={cell}
                 dim={cellDim}
                 cellSize={cellSize}
+                cellInset={dim.cellInset}
+                cellRadius={dim.cellRadius}
                 matchDigit={matchDigit}
                 simplePencilMarking={simplePencilMarking}
             />
@@ -76,14 +79,59 @@ function layerCellCovers ({cells, cellSize, dim, mouseDownHandler, mouseOverHand
     });
 }
 
-function layerCellPaused ({cells, cellSize, dim}) {
+// While paused, the ENTIRE grid is hidden: every cell renders as a uniform
+// empty tile (no digits, no given/colour differentiation, no selection or
+// match highlights - nothing that could leak the puzzle or its progress),
+// with a centred "Paused" label over the board.
+function layerPausedTiles ({cells, cellSize, dim}) {
     return cells.map((cell, i) => {
         const cellDim = dim.cell[i];
-        return <SudokuCellPaused key={`pau${i}`} cell={cell} dim={cellDim} />;
+        return (
+            <rect key={`pt${i}`}
+                className="cell-bg-paused"
+                x={cellDim.x + dim.cellInset}
+                y={cellDim.y + dim.cellInset}
+                width={cellSize - 2 * dim.cellInset}
+                height={cellSize - 2 * dim.cellInset}
+                rx={dim.cellRadius}
+            />
+        );
     });
 }
 
-function cellContentLayers({cells, cellSize, dim, matchDigit, simplePencilMarking, outlineSelection}) {
+function cellContentLayers({cells, cellSize, dim, matchDigit, simplePencilMarking, outlineSelection, isPaused, onResume}) {
+    if (isPaused) {
+        const centerX = dim.width / 2;
+        const buttonWidth = 3.6 * cellSize;
+        const buttonHeight = 1.0 * cellSize;
+        const buttonY = dim.height / 2 + 0.35 * cellSize;
+        return <>
+            {layerPausedTiles({cells, cellSize, dim})}
+            <text className="paused-label"
+                x={centerX}
+                y={dim.height / 2 - 0.65 * cellSize}
+                fontSize={dim.fontSize}
+                textAnchor="middle"
+                dominantBaseline="middle"
+            >Paused</text>
+            <g className="paused-continue" onClick={onResume}>
+                <rect
+                    x={centerX - buttonWidth / 2}
+                    y={buttonY}
+                    width={buttonWidth}
+                    height={buttonHeight}
+                    rx={0.16 * cellSize}
+                />
+                <text
+                    x={centerX}
+                    y={buttonY + buttonHeight / 2}
+                    fontSize={0.42 * cellSize}
+                    textAnchor="middle"
+                    dominantBaseline="middle"
+                >Continue</text>
+            </g>
+        </>;
+    }
     const backgrounds = layerCellBackgrounds({cells, cellSize, dim, matchDigit, simplePencilMarking});
     const selectionOutline = outlineSelection
         ? layerSelectionOutline({cells, dim})
@@ -140,7 +188,7 @@ function useCellTouch (inputHandler) {
 }
 
 
-function SudokuGrid({grid, gridId, dimensions, mouseDownHandler, mouseOverHandler, inputHandler}) {
+function SudokuGrid({grid, gridId, dimensions, mouseDownHandler, mouseOverHandler, inputHandler, onResume}) {
     const cellSize = 100;
     const marginSize = 50;
     const fontSize = 72;
@@ -150,9 +198,13 @@ function SudokuGrid({grid, gridId, dimensions, mouseDownHandler, mouseOverHandle
     const highlightMatches = settings[SETTINGS.highlightMatches];
     const outlineSelection = settings[SETTINGS.outlineSelection];
     const matchDigit = highlightMatches ? grid.get('matchDigit') : undefined;
+    const isPaused = grid.get('pausedAt') !== undefined;
     const cells = grid.get('cells').toArray();
-    const cellContents = cellContentLayers({cells, cellSize, dim, matchDigit, simplePencilMarking, outlineSelection});
-    const cellCovers = layerCellCovers({cells, cellSize, dim, mouseDownHandler, mouseOverHandler});
+    const cellContents = cellContentLayers({cells, cellSize, dim, matchDigit, simplePencilMarking, outlineSelection, isPaused, onResume});
+    // No cell covers while paused: cells aren't clickable (no pointer
+    // cursor, no selection), and the covers would otherwise sit on top of
+    // the Continue button.
+    const cellCovers = isPaused ? null : layerCellCovers({cells, cellSize, dim, mouseDownHandler, mouseOverHandler});
     const rawTouchHandler = useCellTouch(inputHandler);
     const selectionClass = outlineSelection ? 'selection-style-outline' : 'selection-style-solid';
     return (
@@ -168,7 +220,6 @@ function SudokuGrid({grid, gridId, dimensions, mouseDownHandler, mouseOverHandle
             >
                 <rect className="grid-bg" width="100%" height="100%" />
                 {cellContents}
-                <GridLines cellSize={dim.cellSize} marginSize={dim.marginSize} />
                 {cellCovers}
             </svg>
         </div>

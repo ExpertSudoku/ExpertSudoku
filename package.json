@@ -1,7 +1,7 @@
 {
-  "name": "sudoku-web-app",
+  "name": "expertsudoku",
   "version": "1.0.32",
-  "description": "A web application for solving & sharing Sudoku puzzles. Created for SudokuExchange.com",
+  "description": "ExpertSudoku - a daily Sudoku Discord Activity and standalone website (Medium/Expert/Hell difficulties)",
   "author": {
     "name": "Grant McLean",
     "email": "grant@mclean.net.nz",
@@ -16,6 +16,8 @@
   "type": "module",
   "dependencies": {
     "@discord/embedded-app-sdk": "^2.4.0",
+    "@resvg/resvg-wasm": "^2.6.2",
+    "drizzle-orm": "^0.45.2",
     "hono": "^4.9.9",
     "immutable": "4.1.0",
     "react": "18.2.0",
@@ -29,7 +31,13 @@
     "deploy": "wrangler deploy",
     "dev": "vite",
     "lint": "eslint .",
-    "preview": "npm run build && vite preview"
+    "preview": "npm run build && vite preview",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate:local": "wrangler d1 migrations apply daily-sudoku --local",
+    "db:migrate:remote": "wrangler d1 migrations apply daily-sudoku --remote",
+    "seed:generate": "node scripts/generate-puzzles.mjs",
+    "seed:local": "wrangler d1 execute daily-sudoku --local --file=seed.sql",
+    "seed:remote": "wrangler d1 execute daily-sudoku --remote --file=seed.sql"
   },
   "eslintConfig": {
     "extends": "react-app"
@@ -38,6 +46,7 @@
     "@cloudflare/vite-plugin": "^1.13.10",
     "@types/react-dom": "^19.2.0",
     "@vitejs/plugin-react": "^5.0.4",
+    "drizzle-kit": "^0.31.10",
     "vite": "^7.1.9",
     "wrangler": "^4.42.0"
   }

@@ -1,6 +1,6 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "daily-sudoku",
+  "name": "expertsudoku",
   "main": "./worker/index.ts",
   "compatibility_date": "2025-04-01",
   "compatibility_flags": ["nodejs_compat"],
@@ -8,19 +8,27 @@
     "enabled": true
   },
   "upload_source_maps": true,
+  "triggers": {
+    "crons": ["5 0 * * *"]
+  },
+  "routes": [
+    { "pattern": "expertsudoku.app", "custom_domain": true }
+  ],
   "assets": {
     "directory": "./dist/client",
-    "not_found_handling": "single-page-application"
+    "not_found_handling": "single-page-application",
+    "binding": "ASSETS"
   },
   "vars": {
     "VITE_CLIENT_ID": "",
-    "CLIENT_SECRET": ""
+    "DISCORD_PUBLIC_KEY": ""
   },
   "d1_databases": [
     {
       "binding": "DB",
       "database_name": "daily-sudoku",
-      "database_id": "162a3fb7-8da1-4d60-9e3f-0d28d66bfb2e"
+      "database_id": "162a3fb7-8da1-4d60-9e3f-0d28d66bfb2e",
+      "migrations_dir": "drizzle"
     }
   ]
 }

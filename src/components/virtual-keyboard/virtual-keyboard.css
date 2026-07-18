@@ -59,3 +59,18 @@
 .vkbd .input-mode-color.active rect {
     opacity: 1;
 }
+
+/* Brand type: keyboard digits/labels in the same mono face as the grid. */
+.vkbd svg text {
+    font-family: var(--su-mono, monospace);
+}
+
+/* Every key (digits, modes, delete/check/undo) is clickable. */
+.vkbd [data-key-value] {
+    cursor: pointer;
+}
+
+/* The number pad is hidden entirely while the game is paused. */
+.paused .vkbd {
+    display: none;
+}

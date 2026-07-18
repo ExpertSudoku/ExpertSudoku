@@ -1,21 +1,14 @@
+/* Layout/skin for the timer chip lives in status-bar.css - this file only
+ * keeps the pieces that are independent of the header design. */
+
 #timer {
     display: flex;
-}
-
-.elapsed-time {
-    min-width: 2.8em;
-    margin: 2vh 0 0 1.2vh;
-    text-align: right;
-}
-
-.hints-used {
-    margin: 2vh 0 0 0.3em;
+    align-items: center;
 }
 
 .elapsed-time,
 .hints-used {
     display: inline-block;
-    opacity: 0.6;
     line-height: 1;
 }
 
@@ -24,15 +17,7 @@
     margin-right: 0.2em
 }
 
-#pause-btn {
-    margin-left: 0.2vh;
-}
-
-.solved .elapsed-time {
-    color: var(--solved-text-color);
-    font-weight: bold;
-}
-
-.solved #pause-btn {
-    display: none;
+/* Timer digits in the brand mono face (tabular by nature). */
+#timer .elapsed-time {
+    font-family: var(--su-mono, monospace);
 }

@@ -1,8 +1,10 @@
 
+/* Card language matches the landing page rows. */
 .solved-puzzle-options {
-    background-color: var(--vkbd-mode-panel-fill-color);
-    border-radius: 0.55em;
-    padding: 0.65em;
+    background-color: var(--modal-bg-color);
+    border: 1px solid var(--menu-border-color);
+    border-radius: 14px;
+    padding: 0.9em;
 }
 
 .landscape .solved-puzzle-options {
@@ -31,10 +33,10 @@
     text-align: center;
     font-family: inherit;
     font-size: inherit;
-    font-weight: bold;
+    font-weight: 600;
     padding: 0.4em 0;
     color: var(--button-text-color);
     background-color: var(--button-bg-color);
-    border-radius: 0.25em;
+    border-radius: 8px;
     border: none;
 }

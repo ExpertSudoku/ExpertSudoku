@@ -1,0 +1,108 @@
+/* Cartridge-style difficulty rows - see difficulty-picker.jsx. */
+
+.difficulty-picker {
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+    margin: 0;
+}
+
+.difficulty-row {
+    --row-accent: var(--su-blurple);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.25rem;
+    width: 100%;
+    padding: 1.1rem 1.25rem;
+    border: 1px solid var(--su-line);
+    border-radius: 14px;
+    background: var(--su-panel);
+    color: var(--su-ink);
+    cursor: pointer;
+    text-align: left;
+    font-family: var(--su-body);
+    transition: border-color 0.18s ease, transform 0.18s ease;
+}
+
+.difficulty-medium { --row-accent: var(--su-medium); }
+.difficulty-expert { --row-accent: var(--su-expert); }
+.difficulty-hell { --row-accent: var(--su-hell); }
+
+.difficulty-row:hover,
+.difficulty-row:focus-visible {
+    border-color: var(--row-accent);
+    transform: translateY(-2px);
+}
+
+.difficulty-info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.3rem;
+    min-width: 0;
+}
+
+.difficulty-pips {
+    display: flex;
+    gap: 0.3rem;
+}
+
+.difficulty-pip {
+    width: 0.55rem;
+    height: 0.55rem;
+    fill: var(--row-accent);
+}
+
+.difficulty-name {
+    font-family: var(--su-mono);
+    font-weight: 700;
+    font-size: 1.25rem;
+    letter-spacing: -0.01em;
+    line-height: 1.2;
+}
+
+.difficulty-name-accent {
+    color: var(--row-accent);
+}
+
+.difficulty-description {
+    font-size: 0.85rem;
+    color: var(--su-dim);
+}
+
+/* 9x9 redacted mini grid: 3x3 blocks of 3x3 cells. */
+.mini-grid {
+    display: grid;
+    grid-template-columns: repeat(3, auto);
+    gap: 3px;
+    flex-shrink: 0;
+}
+
+.mini-block {
+    display: grid;
+    grid-template-columns: repeat(3, 9px);
+    grid-auto-rows: 9px;
+    gap: 2px;
+}
+
+.mini-cell {
+    border-radius: 2px;
+    background: var(--su-cell);
+    transition: background-color 0.25s ease;
+}
+
+.mini-cell.is-given {
+    background: var(--su-given);
+}
+
+.difficulty-row:hover .mini-cell:not(.is-given),
+.difficulty-row:focus-visible .mini-cell:not(.is-given) {
+    background: var(--row-accent);
+}
+
+@media (max-width: 26rem) {
+    .mini-grid {
+        display: none;
+    }
+}

@@ -4,7 +4,7 @@ import { secondsAsHMS } from '../../lib/string-utils';
 
 import './timer.css';
 
-import ButtonIcon from '../svg-sprites/button-icon';
+import PauseButton from '../buttons/pause-button';
 
 function ElapsedTime ({intervalStartTime, endTime, pausedAt}) {
     const [tickNow, setTickNow] = useState(Date.now());
@@ -25,12 +25,16 @@ function ElapsedTime ({intervalStartTime, endTime, pausedAt}) {
     );
 }
 
-function Timer({startTime, intervalStartTime, endTime, pausedAt}) {
+function Timer({startTime, intervalStartTime, endTime, pausedAt, onPause, onResume}) {
     if (!startTime) {
         return null;
     }
+    const pauseButton = (onPause && onResume && !endTime)
+        ? <PauseButton isPaused={!!pausedAt} onPause={onPause} onResume={onResume} />
+        : null;
     return <div id="timer">
         <ElapsedTime intervalStartTime={intervalStartTime} endTime={endTime} pausedAt={pausedAt} />
+        {pauseButton}
     </div>;
 }
 

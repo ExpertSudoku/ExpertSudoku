@@ -29,3 +29,7 @@ yarn-error.log*
 /worker-configuration.d.ts
 /dist/
 /config.yml
+/.dev.vars
+
+# Generated seed data (regenerate with `npm run seed:generate`)
+/seed.sql

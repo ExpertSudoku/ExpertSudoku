@@ -46,6 +46,16 @@ export default function SvgSprites() {
                 <rect className="fill" x="12" y="22" width="24" height="4"/>
                 <rect className="fill" x="12" y="32" width="24" height="4"/>
             </symbol>
+            <symbol id="icon-pause">
+                <rect className="fill" x="14" y="10" width="7" height="28" />
+                <rect className="fill" x="27" y="10" width="7" height="28" />
+            </symbol>
+            <symbol id="icon-play">
+                <path className="fill" d="M15 9 L15 39 L36 24 Z" />
+            </symbol>
+            <symbol id="icon-exit">
+                <path className="fill" d="M30 8 L14 24 L30 40 L30 32 L22 24 L30 16 Z" />
+            </symbol>
             <symbol id="modal-icon-ok">
                 <path
                     className="icon"
@@ -63,9 +73,6 @@ export default function SvgSprites() {
                     className="icon"
                     d="M16.8 16.75a47 47 0 0 0 0 66.48 47 47 0 0 0 66.49 0 47 47 0 0 0 0-66.48 47 47 0 0 0-66.48 0zm6.12 19.64 14.36-14.32a.38.38 0 0 1 .5 0L50.8 35.06l12.99-13a.38.38 0 0 1 .5 0L78.64 36.4a.38.38 0 0 1 0 .5L65.62 49.9l13.03 13.03a.38.38 0 0 1 0 .5L64.3 77.76a.38.38 0 0 1-.49 0l-13-13.03-13.02 13.03a.38.38 0 0 1-.5 0L22.92 63.44a.38.38 0 0 1 0-.5l13.03-13.03-13.03-13.03a.38.38 0 0 1 0-.5z"
                 />
-            </symbol>
-            <symbol id="site-domain" viewBox="0 0 650 120">
-                <text x="325" y="80" textAnchor="middle" className="fill" fontSize="70" fontFamily="Arial, sans-serif" fontWeight="bold">Sudoku</text>
             </symbol>
         </svg>
     )
