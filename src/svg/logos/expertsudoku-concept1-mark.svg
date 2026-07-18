@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 74 74" role="img" aria-label="ExpertSudoku mark">
+  <!-- Transparent-background mark (no container) for inline use next to text. -->
+  <g id="tiles">
+    <rect x="0" y="0" width="22" height="22" rx="5" fill="#23a55a" />
+    <rect x="26" y="0" width="22" height="22" rx="5" fill="#2f2f2f" />
+    <rect x="52" y="0" width="22" height="22" rx="5" fill="#2f2f2f" />
+    <rect x="0" y="26" width="22" height="22" rx="5" fill="#2f2f2f" />
+    <rect x="26" y="26" width="22" height="22" rx="5" fill="#f0b232" />
+    <rect x="52" y="26" width="22" height="22" rx="5" fill="#2f2f2f" />
+    <rect x="0" y="52" width="22" height="22" rx="5" fill="#2f2f2f" />
+    <rect x="26" y="52" width="22" height="22" rx="5" fill="#2f2f2f" />
+    <rect x="52" y="52" width="22" height="22" rx="5" fill="#f23f43" />
+  </g>
+</svg>

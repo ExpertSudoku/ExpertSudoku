@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 74 74" role="img" aria-label="ExpertSudoku mark (monochrome, for dark backgrounds)">
+  <g fill="#e6e6e6">
+    <rect x="0" y="0" width="22" height="22" rx="5" />
+    <rect x="26" y="0" width="22" height="22" rx="5" opacity="0.25" />
+    <rect x="52" y="0" width="22" height="22" rx="5" opacity="0.25" />
+    <rect x="0" y="26" width="22" height="22" rx="5" opacity="0.25" />
+    <rect x="26" y="26" width="22" height="22" rx="5" />
+    <rect x="52" y="26" width="22" height="22" rx="5" opacity="0.25" />
+    <rect x="0" y="52" width="22" height="22" rx="5" opacity="0.25" />
+    <rect x="26" y="52" width="22" height="22" rx="5" opacity="0.25" />
+    <rect x="52" y="52" width="22" height="22" rx="5" />
+  </g>
+</svg>

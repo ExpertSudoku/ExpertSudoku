@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 
 import DifficultyPicker from '../difficulty-picker/difficulty-picker.jsx';
+import LogoMark from './logo-mark.jsx';
 import ThemeSelect from './theme-select.jsx';
 import { navigate, NavLink } from './site-root.tsx';
 import { fetchPuzzleMeta } from '../../lib/api.ts';
@@ -28,11 +29,7 @@ export default function Landing() {
         <div className="site-page landing">
             <div className="landing-column">
                 <header className="landing-masthead">
-                    <span className="landing-glyph" aria-hidden="true">
-                        <svg viewBox="0 0 12 12"><path d="M 6 0 L 12 6 L 6 12 L 0 6 Z" /></svg>
-                        <svg viewBox="0 0 12 12"><path d="M 6 0 L 12 6 L 6 12 L 0 6 Z" /></svg>
-                        <svg viewBox="0 0 12 12"><path d="M 6 0 L 12 6 L 6 12 L 0 6 Z" /></svg>
-                    </span>
+                    <LogoMark size={22} />
                     <span className="landing-domain">expertsudoku.app</span>
                     <ThemeSelect />
                 </header>
