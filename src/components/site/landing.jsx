@@ -44,8 +44,8 @@ export default function Landing() {
                 {allDone
                     ? (
                         <p className="landing-alldone">
-                            All three solved for today. New puzzles in <DayCountdown /> <br />
-                            see you tomorrow!
+                            All three solved for now.<br />
+                            See you in <DayCountdown />
                         </p>
                     )
                     : null}
@@ -53,7 +53,11 @@ export default function Landing() {
                 <DifficultyPicker onPick={onPick} completed={completed} />
 
                 <p className="landing-meta">
-                    Everyone plays the same grid. Today&apos;s puzzles rotate in <DayCountdown />.
+                    Everyone plays the same grid.
+                    {!allDone
+                        ? (<span>Today&apos;s puzzles rotate in <DayCountdown />.</span>)
+                        : null
+                    }
                 </p>
 
                 <p className="landing-note">
