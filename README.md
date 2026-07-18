@@ -7,7 +7,10 @@ This project implements the Sudoku web app used on [SudokuExchange.com](https://
 ```sh
 npm install
 npm run dev          # http://localhost:3000 - plain website works immediately
+npm run dev:discord  # build + serve production bundle on :3000 - REQUIRED for testing inside Discord
 ```
+
+> **Testing inside Discord?** Use `npm run dev:discord`. Discord's activity proxy applies a CSP without `style-src 'unsafe-inline'`, and Vite's dev server injects all CSS as inline `<style>` tags — so `npm run dev` renders completely unstyled inside the Discord iframe (giant SVGs, default buttons; the CSP violations only show in the iframe's console context). The production bundle uses an external CSS file, which the CSP allows. No HMR — re-run after changes.
 
 The website (`/`, `/play`, `/imprint`, `/privacy`, `/terms`) works against a plain `localhost:3000` with no further setup. The Discord Activity path additionally needs:
 

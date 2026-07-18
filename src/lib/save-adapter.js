@@ -65,8 +65,17 @@ export function createServerAdapter(sessionToken, difficulty) {
             flush(pending, { keepalive: true });
         }
     }
+    // pagehide fires on iframe/tab teardown in cases where visibilitychange
+    // doesn't (notably when the Discord client closes the activity) - the
+    // keepalive fetch still goes out after the page is gone.
+    function handlePageHide() {
+        if (pending) {
+            flush(pending, { keepalive: true });
+        }
+    }
     if (typeof document !== 'undefined') {
         document.addEventListener('visibilitychange', handleVisibilityChange);
+        window.addEventListener('pagehide', handlePageHide);
     }
 
     return {
@@ -74,6 +83,7 @@ export function createServerAdapter(sessionToken, difficulty) {
         destroy() {
             if (typeof document !== 'undefined') {
                 document.removeEventListener('visibilitychange', handleVisibilityChange);
+                window.removeEventListener('pagehide', handlePageHide);
             }
             if (debounceTimer) {
                 clearTimeout(debounceTimer);

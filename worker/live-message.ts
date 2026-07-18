@@ -13,8 +13,23 @@ const EDIT_THROTTLE_MS = 5000;
 // A non-completed player whose progress hasn't been saved for this long is
 // treated as having left the activity (or paused): their time freezes and
 // gets a pause icon. The client autosaves every couple of seconds while
-// actively playing, so this threshold is generous.
-const INACTIVE_AFTER_MS = 45_000;
+// actively playing. Must stay below LEAVER_SWEEP_DELAY_MS so the sweep a
+// request schedules can actually observe the requester as inactive.
+const INACTIVE_AFTER_MS = 20_000;
+
+// Deferred passes scheduled alongside every progress write (waitUntil keeps
+// the worker alive up to ~30s past the response, so both fit):
+//  - the flush retries just after the edit-throttle window, so a write that
+//    only set `dirty` still repaints even if the player leaves immediately;
+//  - the sweep repaints once more after the inactivity threshold, so a
+//    player who left shows frozen time + pause icon without needing any
+//    further requests from anyone.
+const DIRTY_FLUSH_DELAY_MS = EDIT_THROTTLE_MS + 1000;
+const LEAVER_SWEEP_DELAY_MS = 25_000;
+
+function sleep(ms: number): Promise<void> {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+}
 
 const DIFFICULTY_LABEL: Record<string, string> = {
     medium: 'Medium',
@@ -226,4 +241,44 @@ export async function maybeUpdateLiveMessage(
         .update(liveMessages)
         .set({ messageId, lastEditAt: new Date(), dirty: false })
         .where(eq(liveMessages.id, liveMsg.id));
+}
+
+type LiveMessageParams = {
+    channelId: string;
+    guildId: string | null;
+    day: string;
+    difficulty: string;
+    force: boolean;
+};
+
+// Runs an update pass only if the message still has unpainted changes
+// (dirty flag set by a throttled/failed attempt).
+async function flushIfDirty(env: Env, params: LiveMessageParams): Promise<void> {
+    const db = getDb(env);
+    const rows = await db
+        .select({ dirty: liveMessages.dirty })
+        .from(liveMessages)
+        .where(and(
+            eq(liveMessages.channelId, params.channelId),
+            eq(liveMessages.day, params.day),
+            eq(liveMessages.difficulty, params.difficulty)
+        ))
+        .limit(1);
+    if (rows[0]?.dirty) {
+        await maybeUpdateLiveMessage(env, { ...params, force: false });
+    }
+}
+
+// Schedule the immediate update plus the two deferred passes on the
+// request's execution context. This is what progress writes call - it
+// guarantees the live image reaches its final state even if the player
+// closes the activity right after this request:
+//  1. now: normal (throttled) update;
+//  2. +6s: repaint if the immediate attempt only managed to set `dirty`;
+//  3. +25s: one more pass so a player who stopped sending saves flips to
+//     the frozen-time + pause-icon presentation (INACTIVE_AFTER_MS).
+export function scheduleLiveMessageUpdate(env: Env, ctx: ExecutionContext, params: LiveMessageParams): void {
+    ctx.waitUntil(maybeUpdateLiveMessage(env, params));
+    ctx.waitUntil(sleep(DIRTY_FLUSH_DELAY_MS).then(() => flushIfDirty(env, params)));
+    ctx.waitUntil(sleep(LEAVER_SWEEP_DELAY_MS).then(() => maybeUpdateLiveMessage(env, { ...params, force: false })));
 }

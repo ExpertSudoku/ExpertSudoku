@@ -30,6 +30,7 @@
     "check": "vite build && wrangler deploy --dry-run",
     "deploy": "wrangler deploy",
     "dev": "vite",
+    "dev:discord": "vite build && vite preview --port 3000",
     "lint": "eslint .",
     "preview": "npm run build && vite preview",
     "db:generate": "drizzle-kit generate",

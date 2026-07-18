@@ -4,7 +4,7 @@ import { getDb } from './db';
 import { puzzles, progress } from '../db/schema';
 import { utcDayString } from './day';
 import { requireSession, SessionVariables } from './session';
-import { maybeUpdateLiveMessage } from './live-message';
+import { scheduleLiveMessageUpdate } from './live-message';
 // @ts-ignore - plain JS, dependency-free shared module
 import { isDifficulty } from '../shared/difficulties.js';
 
@@ -158,15 +158,16 @@ progressRoutes.post('/', async (context) => {
             },
         });
 
-    context.executionCtx.waitUntil(
-        maybeUpdateLiveMessage(context.env, {
-            channelId: session.chan,
-            guildId: session.guild,
-            day,
-            difficulty,
-            force: justCompleted,
-        })
-    );
+    // Immediate update + deferred passes (dirty flush, leaver sweep) so the
+    // live image reaches its final state even if this was the player's last
+    // request before closing the activity.
+    scheduleLiveMessageUpdate(context.env, context.executionCtx, {
+        channelId: session.chan,
+        guildId: session.guild,
+        day,
+        difficulty,
+        force: justCompleted,
+    });
 
     return context.json({ ok: true, completedAt: justCompleted ? now.getTime() : null });
 });
