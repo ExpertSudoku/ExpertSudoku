@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 
 import App from './app.jsx';
-import Spinner from '../spinner/spinner.tsx';
+import LoadingPage from '../site/loading-page.jsx';
 import { modelHelpers } from '../../lib/sudoku-model.js';
 import { isDifficulty } from '../../../shared/difficulties.js';
 import { navigate } from '../site/site-root.tsx';
@@ -58,7 +58,7 @@ export default function WebPlay() {
         return null;
     }
     if (puzzle === null) {
-        return (<div className="site-page"><Spinner /></div>);
+        return (<LoadingPage />);
     }
     if (puzzle.error === 'no-puzzle') {
         return (

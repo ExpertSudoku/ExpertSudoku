@@ -208,6 +208,15 @@
     padding: 3rem 1.5rem 4rem;
 }
 
+/* Picker masthead: brand mark left, the landing's Light/Auto/Dark
+ * segmented selector right. */
+.picker-masthead {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 2.5rem;
+}
+
 .picker-screen-inner {
     max-width: 34rem;
     margin: 0 auto;

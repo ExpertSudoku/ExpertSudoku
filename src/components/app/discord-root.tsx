@@ -1,7 +1,8 @@
 import {createContext, useEffect, useRef, useState} from "react";
 import {CommandResponse, Platform} from "@discord/embedded-app-sdk";
 import {getDiscordSdk} from "../../discordSdk.ts";
-import Spinner from '../spinner/spinner.tsx'
+// @ts-ignore
+import LoadingPage from '../site/loading-page.jsx'
 // @ts-ignore
 import DifficultyPicker from "../difficulty-picker/difficulty-picker.jsx";
 // @ts-ignore
@@ -116,7 +117,7 @@ export default function DiscordRoot(): any {
     }, [session]);
 
     if (auth === null || session === null) {
-        return (<div className="site-page"><Spinner /></div>);
+        return (<LoadingPage label="Connecting…" />);
     }
 
     if (difficulty === null) {

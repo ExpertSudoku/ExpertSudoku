@@ -105,7 +105,6 @@
     --vkbd-active-mode-fill-color: #5865f2;
     --vkbd-mode-icon-fill-color: #55565c;
     --vkbd-active-mode-icon-fill-color: #ffffff;
-    --spinner-color: #5865f2;
 }
 
 /* Dark theme = the ExpertSudoku brand look (site-theme.css --su-* palette,
@@ -210,7 +209,6 @@
     --vkbd-active-mode-fill-color: #5865f2;
     --vkbd-mode-icon-fill-color: #8a8a8a;
     --vkbd-active-mode-icon-fill-color: #ffffff;
-    --spinner-color: #5865f2;
 }
 
 html {

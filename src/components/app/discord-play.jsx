@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 
 import App from './app.jsx';
-import Spinner from '../spinner/spinner.tsx';
+import LoadingPage from '../site/loading-page.jsx';
 import { fetchTodayPuzzle, fetchProgress } from '../../lib/api.ts';
 import { createServerAdapter } from '../../lib/save-adapter.js';
 import { recordCompletion, getCompletedDifficulties } from '../../lib/completions.js';
@@ -66,7 +66,7 @@ export default function DiscordPlay({ difficulty, session, onExit, onSwitchDiffi
     }, [completed, day, difficulty]);
 
     if (data === null) {
-        return (<div className="site-page"><Spinner /></div>);
+        return (<LoadingPage />);
     }
     if (data.error === 'no-puzzle') {
         return (
