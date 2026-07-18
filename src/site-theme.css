@@ -52,10 +52,19 @@
     /* Height of the dev-build banner; 0 in production, set on :root.dev
      * (class added by index.tsx in development builds only). */
     --dev-banner-h: 0rem;
+
+    /* Extra clearance above the in-game header so it isn't covered by
+     * Discord's own floating activity controls; 0 everywhere except
+     * inside Discord on mobile (root class set by discord-root.tsx). */
+    --discord-top-inset: 0rem;
 }
 
 :root.dev {
     --dev-banner-h: 1.6rem;
+}
+
+:root.discord-mobile {
+    --discord-top-inset: calc(env(safe-area-inset-top, 0px) + 1.5rem);
 }
 
 /* Mobile: the in-game header wraps to two rows (status-bar.css, same

@@ -6,7 +6,7 @@
 .status-bar {
     box-sizing: border-box;
     position: fixed;
-    top: var(--dev-banner-h, 0rem);
+    top: calc(var(--dev-banner-h, 0rem) + var(--discord-top-inset, 0rem));
     left: 0;
     width: 100%;
     height: var(--header-height);
@@ -250,18 +250,6 @@
         grid-column: 2;
         justify-self: end;
     }
-}
-
-/* Discord mobile (:root class set by discord-root.tsx from the SDK's
- * platform): the bar is pinned to the bottom edge instead of the top,
- * where it doubles as a thumb-reachable toolbar and stays clear of
- * Discord's own top chrome. #root/.site-page swap their reserved padding
- * to match (index.css / site-theme.css). */
-:root.discord-mobile .status-bar {
-    top: auto;
-    bottom: 0;
-    border-bottom: none;
-    border-top: 1px solid var(--su-line);
 }
 
 /* Dev-only SOLVE chip (rendered only when a dev-build solution exists). */

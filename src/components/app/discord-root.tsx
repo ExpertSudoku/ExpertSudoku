@@ -1,5 +1,5 @@
 import {createContext, useEffect, useRef, useState} from "react";
-import {CommandResponse} from "@discord/embedded-app-sdk";
+import {CommandResponse, Platform} from "@discord/embedded-app-sdk";
 import {getDiscordSdk} from "../../discordSdk.ts";
 import Spinner from '../spinner/spinner.tsx'
 // @ts-ignore
@@ -74,6 +74,13 @@ export default function DiscordRoot(): any {
             return;
         }
         started.current = true;
+        // The SDK reads `platform` off the iframe URL at construction time.
+        // On Discord mobile the layout shifts down by --discord-top-inset
+        // (site-theme.css) so the header isn't covered by Discord's own
+        // floating activity controls.
+        if (getDiscordSdk().platform === Platform.MOBILE) {
+            document.documentElement.classList.add('discord-mobile');
+        }
         setupDiscordSdk();
     }, []);
 
