@@ -26,8 +26,8 @@
   "d1_databases": [
     {
       "binding": "DB",
-      "database_name": "daily-sudoku",
-      "database_id": "162a3fb7-8da1-4d60-9e3f-0d28d66bfb2e",
+      "database_name": "expertsudoku-prod",
+      "database_id": "5f571365-0d69-4a3e-89ee-80c44617a6ef",
       "migrations_dir": "drizzle"
     }
   ]

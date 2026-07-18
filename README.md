@@ -1,6 +1,6 @@
 This project implements the Sudoku web app used on [SudokuExchange.com](https://sudokuexchange.com), forked and extended into **ExpertSudoku** — a daily Sudoku puzzle in three difficulties (Medium, Expert, Hell), playable both as a Discord Activity (with live progress messages and streaks posted to the channel) and as a standalone website at `expertsudoku.app` (no login, no server tracking).
 
-> **Note:** the Cloudflare Worker was renamed from `daily-sudoku` to `expertsudoku` (see `wrangler.json`). This creates a *new* Worker on deploy — the old `daily-sudoku` Worker is not automatically replaced and should be deleted manually from the Cloudflare dashboard once the new one is confirmed working. The D1 database keeps its original name `daily-sudoku`; only the `DB` binding matters to the code.
+> **Note:** the Cloudflare Worker was renamed from `daily-sudoku` to `expertsudoku` (see `wrangler.json`). This creates a *new* Worker on deploy — the old `daily-sudoku` Worker is not automatically replaced and should be deleted manually from the Cloudflare dashboard once the new one is confirmed working. The D1 database is `expertsudoku-prod`; only the `DB` binding matters to the code.
 
 ## Development setup
 

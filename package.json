@@ -34,11 +34,11 @@
     "lint": "eslint .",
     "preview": "npm run build && vite preview",
     "db:generate": "drizzle-kit generate",
-    "db:migrate:local": "wrangler d1 migrations apply daily-sudoku --local",
-    "db:migrate:remote": "wrangler d1 migrations apply daily-sudoku --remote",
+    "db:migrate:local": "wrangler d1 migrations apply expertsudoku-prod --local",
+    "db:migrate:remote": "wrangler d1 migrations apply expertsudoku-prod --remote",
     "seed:generate": "node scripts/generate-puzzles.mjs",
-    "seed:local": "wrangler d1 execute daily-sudoku --local --file=seed.sql",
-    "seed:remote": "wrangler d1 execute daily-sudoku --remote --file=seed.sql"
+    "seed:local": "wrangler d1 execute expertsudoku-prod --local --file=seed.sql",
+    "seed:remote": "wrangler d1 execute expertsudoku-prod --remote --file=seed.sql"
   },
   "eslintConfig": {
     "extends": "react-app"
