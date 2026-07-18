@@ -11,7 +11,7 @@ export default function HelpButton ({menuHandler}) {
     );
 
     return (
-        <button type="button" title="How to play" onClick={clickHandler}>
+        <button type="button" className="help-btn" title="How to play" onClick={clickHandler}>
             <span className="help-qmark" aria-hidden="true">?</span>
             <span className="visually-hidden">How to play</span>
         </button>

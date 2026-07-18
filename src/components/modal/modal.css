@@ -578,7 +578,7 @@ input.toggle:checked+.indicator::before {
 }
 
 .hint-text-wrapper {
-    max-width: 40em;
+    max-width: 45em;
 }
 
 .hint-text p {

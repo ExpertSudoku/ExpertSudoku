@@ -238,6 +238,13 @@ body {
     background-color: var(--background-color);
 }
 
+/* Discord mobile: the status bar is pinned to the bottom edge instead
+ * (status-bar.css), so the reserved space moves there too. */
+:root.discord-mobile #root {
+    padding-top: var(--dev-banner-h, 0rem);
+    padding-bottom: var(--header-height, 7.5vh);
+}
+
 a {
     color: var(--link-text-color);
     background-color: var(--link-bg-color);

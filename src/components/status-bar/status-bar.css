@@ -185,22 +185,83 @@
     white-space: nowrap;
 }
 
-/* Narrow screens: keep the pips (they alone encode the difficulty), drop
- * the wordmark text to make room for the controls. */
-@media (max-width: 30rem) {
-    .site-name-accent,
-    .site-name-rest {
+/* Narrow (mobile) screens: the bar breaks into two rows - wordmark and the
+ * theme selector on top, timer and the square nav chips underneath at full
+ * tap size. The controls wrapper dissolves (display: contents) so each chip
+ * can be grid-placed. --header-height grows to match (site-theme.css, same
+ * breakpoint). */
+@media (max-width: 52rem) {
+    .status-bar {
+        display: grid;
+        grid-template-columns: auto 1fr auto auto;
+        align-content: center;
+        align-items: center;
+        row-gap: 0.5rem;
+        column-gap: 0.4rem;
+        padding: 0.5rem 1rem;
+    }
+
+    .status-bar-controls {
+        display: contents;
+    }
+
+    .status-bar .site-name {
+        grid-row: 1;
+        grid-column: 1;
+        font-size: 1.2rem;
+    }
+
+    /* The absolute puzzle number is nice-to-have; drop it for space. */
+    .site-name .site-name-number {
         display: none;
     }
 
-    .site-name-pips {
-        margin-right: 0;
+    .status-bar .theme-select {
+        grid-row: 1;
+        grid-column: 3 / span 2;
+        justify-self: end;
     }
 
-    .site-name-pips svg {
-        width: 0.65em;
-        height: 0.65em;
+    .status-bar .theme-select button {
+        font-size: 0.85rem;
+        padding: 0.5rem 0.55rem;
     }
+
+    .status-bar #timer {
+        grid-row: 2;
+        grid-column: 1;
+        justify-self: start;
+    }
+
+    .status-bar #exit-btn {
+        grid-row: 2;
+        grid-column: 3;
+        justify-self: end;
+    }
+
+    .status-bar .help-btn {
+        grid-row: 2;
+        grid-column: 4;
+        justify-self: end;
+    }
+
+    .status-bar-controls > button.dev-solve {
+        grid-row: 1;
+        grid-column: 2;
+        justify-self: end;
+    }
+}
+
+/* Discord mobile (:root class set by discord-root.tsx from the SDK's
+ * platform): the bar is pinned to the bottom edge instead of the top,
+ * where it doubles as a thumb-reachable toolbar and stays clear of
+ * Discord's own top chrome. #root/.site-page swap their reserved padding
+ * to match (index.css / site-theme.css). */
+:root.discord-mobile .status-bar {
+    top: auto;
+    bottom: 0;
+    border-bottom: none;
+    border-top: 1px solid var(--su-line);
 }
 
 /* Dev-only SOLVE chip (rendered only when a dev-build solution exists). */
