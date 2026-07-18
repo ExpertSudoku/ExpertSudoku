@@ -12,7 +12,6 @@ export default defineConfig({
 		},
         allowedHosts: [
             'expertsudoku.app',
-			'grammar-air-clearing-rico.trycloudflare.com'
         ]
 	},
 });
