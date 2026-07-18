@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 
+import DayCountdown from './day-countdown.jsx';
 import DifficultyPicker from '../difficulty-picker/difficulty-picker.jsx';
 import LogoMark from './logo-mark.jsx';
 import ThemeSelect from './theme-select.jsx';
@@ -43,7 +44,7 @@ export default function Landing() {
                 {allDone
                     ? (
                         <p className="landing-alldone">
-                            All three solved for today. New puzzles at 00:00 UTC <br />
+                            All three solved for today. New puzzles in <DayCountdown /> <br />
                             see you tomorrow!
                         </p>
                     )
@@ -52,7 +53,7 @@ export default function Landing() {
                 <DifficultyPicker onPick={onPick} completed={completed} />
 
                 <p className="landing-meta">
-                    Everyone plays the same grid. New puzzles at 00:00 UTC.
+                    Everyone plays the same grid. Today&apos;s puzzles rotate in <DayCountdown />.
                 </p>
 
                 <p className="landing-note">

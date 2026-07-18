@@ -1,5 +1,6 @@
 import { secondsAsHMS } from '../../lib/string-utils';
 import DifficultyPicker from '../difficulty-picker/difficulty-picker';
+import DayCountdown from '../site/day-countdown.jsx';
 
 import "./solved-puzzle-options.css";
 
@@ -14,8 +15,8 @@ export default function SolvedPuzzleOptions({elapsedTime, completed, onSwitchDif
                 ? <>
                     <p className="solved-next">
                         {allDone
-                            ? <>That&apos;s all three for today - see you tomorrow!</>
-                            : <>Fancy another one?</>}
+                            ? <>That&apos;s all three for today - new puzzles in <DayCountdown />.</>
+                            : <>Fancy another one? Today&apos;s puzzles rotate in <DayCountdown />.</>}
                     </p>
                     <DifficultyPicker completed={completed} onPick={onSwitchDifficulty} />
                 </>

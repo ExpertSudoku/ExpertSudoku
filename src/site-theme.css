@@ -239,3 +239,11 @@
         animation-duration: 0.01ms !important;
     }
 }
+
+/* Countdown to the next UTC day (landing meta, all-done cards). */
+.day-countdown {
+    font-family: var(--su-mono);
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    color: var(--su-ink);
+}

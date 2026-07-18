@@ -6,6 +6,7 @@ import DifficultyPicker from '../difficulty-picker/difficulty-picker.jsx';
 import { fetchTodayPuzzle, fetchProgress } from '../../lib/api.ts';
 import { createServerAdapter } from '../../lib/save-adapter.js';
 import { recordCompletion, getCompletedDifficulties } from '../../lib/completions.js';
+import DayCountdown from '../site/day-countdown.jsx';
 
 // Each difficulty is its own daily brand, matching the picker rows and the
 // board images posted to Discord.
@@ -116,7 +117,7 @@ export default function DiscordPlay({ difficulty, session, onExit, onSwitchDiffi
                             ? <> in <span className="completion-time">{formatMMSS(completed.seconds)}</span></>
                             : null}
                     </h1>
-                    <p className="completion-next">Fancy another one?</p>
+                    <p className="completion-next">Fancy another one? Today&apos;s puzzles rotate in <DayCountdown />.</p>
                     <DifficultyPicker
                         completed={[difficulty, ...getCompletedDifficulties(day)]}
                         onPick={onSwitchDifficulty ?? onExit}
