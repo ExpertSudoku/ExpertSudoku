@@ -132,7 +132,17 @@ app.get('/api/dev/board-preview', async (context) => {
 // file - this is what lets the hand-rolled client router in
 // src/components/site/site-root.tsx handle deep links/reloads on
 // /play, /imprint, /privacy, /terms.
-app.notFound((context) => context.env.ASSETS.fetch(context.req.raw));
+//
+// EXCEPT under /api/: an unmatched API request (wrong path, or wrong METHOD
+// - e.g. opening the POST-only /api/interactions in a browser) must return
+// a JSON error, not silently render the index page.
+app.notFound((context) => {
+    const { pathname } = new URL(context.req.url);
+    if (pathname === '/api' || pathname.startsWith('/api/')) {
+        return context.json({ error: 'not-found', hint: `no route for ${context.req.method} ${pathname}` }, 404);
+    }
+    return context.env.ASSETS.fetch(context.req.raw);
+});
 
 export default {
     fetch: app.fetch,

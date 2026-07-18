@@ -69,6 +69,16 @@ type Interaction = {
 
 export const interactionRoutes = new Hono<{ Bindings: Env }>();
 
+// Browsers GET this when someone checks the URL by hand - the real endpoint
+// is POST-only (Discord sends signed POSTs). Answer with a diagnosable hint
+// instead of a 404.
+interactionRoutes.get('/', (context) => {
+    return context.json({
+        error: 'method-not-allowed',
+        hint: 'This is the Discord Interactions endpoint - it only accepts signed POST requests from Discord. Configure it in the portal as the Interactions Endpoint URL; DISCORD_PUBLIC_KEY must be set in the deployed worker or every request is rejected with 401.',
+    }, 405);
+});
+
 interactionRoutes.post('/', async (context) => {
     const signature = context.req.header('X-Signature-Ed25519');
     const timestamp = context.req.header('X-Signature-Timestamp');
