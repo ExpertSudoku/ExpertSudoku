@@ -6,9 +6,9 @@ import './difficulty-picker.css';
 // Each difficulty is its own daily: the row is styled like that daily's
 // cartridge label, matching the board images posted to Discord.
 const META = {
-    medium: { accent: 'Medium', rest: 'Sudoku', pips: 1, description: 'Singles only. A clean warm-up.' },
-    expert: { accent: 'Expert', rest: 'Sudoku', pips: 2, description: 'Pairs, pointing pairs, box/line reduction.' },
-    hell: { accent: 'Hell', rest: 'Sudoku', pips: 3, description: 'Everything else. Bring coffee.' },
+    medium: { accent: 'Medium', pips: 1, description: 'Singles only. A clean warm-up.' },
+    expert: { accent: 'Expert', pips: 2, description: 'Pairs, pointing pairs, box/line reduction.' },
+    hell: { accent: 'Hell', pips: 3, description: 'Everything else. Bring coffee.' },
 };
 
 function Pips({ count }) {
@@ -76,7 +76,7 @@ export default function DifficultyPicker({ onPick, completed }) {
                             <Pips count={meta.pips} />
                             <span className="difficulty-name">
                                 <span className="difficulty-name-accent">{meta.accent}</span>
-                                {meta.rest}
+                                Sudoku
                             </span>
                             {isDone
                                 ? <span className="difficulty-description difficulty-done-hint">Already completed today</span>

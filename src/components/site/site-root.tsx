@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useSyncExternalStore } from 'react';
 import DiscordRoot from '../app/discord-root.tsx';
 // @ts-ignore
 import Landing from './landing.jsx';
@@ -42,21 +42,24 @@ export function NavLink({ to, className, children }: { to: string; className?: s
     );
 }
 
+function subscribeToPath(callback: () => void): () => void {
+    window.addEventListener('popstate', callback);
+    return () => window.removeEventListener('popstate', callback);
+}
+
 export default function SiteRoot() {
     // Discord embeds the Activity in an iframe and appends `frame_id` (among
     // other params) to the URL - that's how we tell "running inside Discord"
     // apart from "running as a plain website" without any other signal.
     const isDiscord = new URLSearchParams(window.location.search).has('frame_id');
-    const [path, setPath] = useState(currentPath());
-
-    useEffect(() => {
-        if (isDiscord) {
-            return;
-        }
-        const onPopState = () => setPath(currentPath());
-        window.addEventListener('popstate', onPopState);
-        return () => window.removeEventListener('popstate', onPopState);
-    }, [isDiscord]);
+    // useSyncExternalStore (not useState + useEffect): child effects run
+    // before the parent's, so a child that calls navigate() from its mount
+    // effect (e.g. WebPlay redirecting /play-without-difficulty to /) fires
+    // popstate before a parent-effect listener would exist - the event is
+    // lost and the router state goes stale, rendering a blank page. The
+    // store re-reads the snapshot when the subscription attaches, so a
+    // navigation that happened during mount is picked up.
+    const path = useSyncExternalStore(subscribeToPath, currentPath);
 
     if (isDiscord) {
         return <DiscordRoot />;
