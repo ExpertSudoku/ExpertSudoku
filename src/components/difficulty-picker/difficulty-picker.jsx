@@ -78,9 +78,9 @@ function MiniGrid({ difficulty, givens }) {
 }
 
 // `completed` (optional): a difficulty or array of difficulties already
-// completed today (src/lib/completions.js) - those rows stay visible but
-// are greyed out, disabled, and show a "completed" hint instead of their
-// description.
+// completed today (src/lib/completions.js) - those rows are greyed out and
+// show a "completed" hint, but stay CLICKABLE so players can revisit their
+// solved board.
 export default function DifficultyPicker({ onPick, completed }) {
     const done = completed ? [].concat(completed) : [];
     const [givensByDifficulty, setGivensByDifficulty] = useState(cachedGivens);
@@ -103,7 +103,6 @@ export default function DifficultyPicker({ onPick, completed }) {
                         key={difficulty}
                         type="button"
                         className={`difficulty-row difficulty-${difficulty}${isDone ? ' is-completed' : ''}`}
-                        disabled={isDone}
                         onClick={() => onPick(difficulty)}
                     >
                         <span className="difficulty-info">
@@ -113,7 +112,7 @@ export default function DifficultyPicker({ onPick, completed }) {
                                 Sudoku
                             </span>
                             {isDone
-                                ? <span className="difficulty-description difficulty-done-hint">Already completed today</span>
+                                ? <span className="difficulty-description difficulty-done-hint">Completed.</span>
                                 : <span className="difficulty-description">{meta.description}</span>}
                         </span>
                         <MiniGrid difficulty={difficulty} givens={givensByDifficulty?.[difficulty]} />

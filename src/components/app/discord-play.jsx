@@ -2,38 +2,23 @@ import { useEffect, useMemo, useState } from 'react';
 
 import App from './app.jsx';
 import Spinner from '../spinner/spinner.tsx';
-import DifficultyPicker from '../difficulty-picker/difficulty-picker.jsx';
 import { fetchTodayPuzzle, fetchProgress } from '../../lib/api.ts';
 import { createServerAdapter } from '../../lib/save-adapter.js';
 import { recordCompletion, getCompletedDifficulties } from '../../lib/completions.js';
-import DayCountdown from '../site/day-countdown.jsx';
-
-// Each difficulty is its own daily brand, matching the picker rows and the
-// board images posted to Discord.
-const NAMES = {
-    medium: 'MediumSudoku',
-    expert: 'ExpertSudoku',
-    hell: 'HellSudoku',
-};
-
-function formatMMSS(totalSeconds) {
-    const m = Math.floor(totalSeconds / 60);
-    const s = Math.floor(totalSeconds % 60);
-    return `${m}:${String(s).padStart(2, '0')}`;
-}
 
 export default function DiscordPlay({ difficulty, session, onExit, onSwitchDifficulty }) {
     // null = loading, {puzzle, progress} = loaded, {error} = failed
     const [data, setData] = useState(null);
-    // null = not completed; {seconds} once solved (either restored from the
-    // server on rejoin, or detected live via the save adapter below) - the
-    // SAME completion screen shows in both cases.
-    const [completed, setCompleted] = useState(null);
+    // Tracked only to mirror completions into the client-side record - the
+    // UI no longer branches on it: a completed puzzle renders the App with
+    // the restored SOLVED BOARD (plus the post-solve panel), so players can
+    // revisit their solution at any time.
+    const [completed, setCompleted] = useState(false);
 
     useEffect(() => {
         let cancelled = false;
         setData(null);
-        setCompleted(null);
+        setCompleted(false);
         Promise.all([
             fetchTodayPuzzle(difficulty),
             fetchProgress(session.sessionToken, difficulty),
@@ -48,9 +33,7 @@ export default function DiscordPlay({ difficulty, session, onExit, onSwitchDiffi
             } else {
                 setData({ puzzle, progress });
                 if (progress.completedAt) {
-                    const seconds = progress.completionSeconds
-                        ?? Math.floor((progress.state?.elapsedTime ?? 0) / 1000);
-                    setCompleted({ seconds });
+                    setCompleted(true);
                 }
             }
         });
@@ -63,10 +46,8 @@ export default function DiscordPlay({ difficulty, session, onExit, onSwitchDiffi
         return {
             save(puzzleState, grid) {
                 adapter.save(puzzleState, grid);
-                // Live completion detection: swap to the completion screen
-                // (the same one shown on rejoin) as soon as the grid solves.
                 if (grid.get('solved')) {
-                    setCompleted((prev) => prev ?? { seconds: Math.floor((puzzleState.elapsedTime ?? 0) / 1000) });
+                    setCompleted(true);
                 }
             },
             destroy: () => adapter.destroy(),
@@ -75,8 +56,8 @@ export default function DiscordPlay({ difficulty, session, onExit, onSwitchDiffi
     useEffect(() => () => stateAdapter.destroy(), [stateAdapter]);
 
     // Mirror completions into the client-side record (src/lib/completions.js)
-    // so difficulty pickers can hide already-finished difficulties without a
-    // server round-trip.
+    // so difficulty pickers can grey out already-finished difficulties
+    // without a server round-trip.
     const day = (data && !data.error) ? data.puzzle.day : null;
     useEffect(() => {
         if (completed && day) {
@@ -101,27 +82,6 @@ export default function DiscordPlay({ difficulty, session, onExit, onSwitchDiffi
             <div className="site-page">
                 <div className="web-play-message">
                     Something went wrong loading today&apos;s puzzle. Please try again shortly.
-                </div>
-            </div>
-        );
-    }
-
-    if (completed) {
-        return (
-            <div className="site-page completion-screen">
-                <div className="completion-card">
-                    <p className="completion-eyebrow">Solved</p>
-                    <h1 className="completion-title">
-                        {NAMES[difficulty] ?? difficulty}
-                        {completed.seconds
-                            ? <> in <span className="completion-time">{formatMMSS(completed.seconds)}</span></>
-                            : null}
-                    </h1>
-                    <p className="completion-next">Fancy another one? Today&apos;s puzzles rotate in <DayCountdown />.</p>
-                    <DifficultyPicker
-                        completed={[difficulty, ...getCompletedDifficulties(day)]}
-                        onPick={onSwitchDifficulty ?? onExit}
-                    />
                 </div>
             </div>
         );

@@ -29,17 +29,21 @@
 .difficulty-expert { --row-accent: var(--su-expert); }
 .difficulty-hell { --row-accent: var(--su-hell); }
 
-.difficulty-row:hover:not(:disabled),
-.difficulty-row:focus-visible:not(:disabled) {
+.difficulty-row:hover,
+.difficulty-row:focus-visible {
     border-color: var(--row-accent);
     transform: translateY(-2px);
 }
 
-/* Already completed today: visible but inert - greyed, no hover effects,
- * hint instead of the description. */
+/* Already completed today: greyed with a hint, but still clickable -
+ * clicking revisits the solved board. Hover restores most contrast. */
 .difficulty-row.is-completed {
-    cursor: default;
     opacity: 0.55;
+}
+
+.difficulty-row.is-completed:hover,
+.difficulty-row.is-completed:focus-visible {
+    opacity: 0.85;
 }
 
 .difficulty-row.is-completed .difficulty-done-hint {
@@ -108,8 +112,8 @@
     background: var(--su-given);
 }
 
-.difficulty-row:hover:not(:disabled) .mini-cell:not(.is-given),
-.difficulty-row:focus-visible:not(:disabled) .mini-cell:not(.is-given) {
+.difficulty-row:hover .mini-cell:not(.is-given),
+.difficulty-row:focus-visible .mini-cell:not(.is-given) {
     background: var(--row-accent);
 }
 
