@@ -13,6 +13,10 @@ import {isDifficulty} from "../../../shared/difficulties.js";
 // @ts-ignore
 import {recordCompletion, getCompletedDifficulties} from "../../lib/completions.js";
 import {fetchProgressSummary} from "../../lib/api.ts";
+// @ts-ignore
+import LogoMark from "../site/logo-mark.jsx";
+// @ts-ignore
+import ThemeSelect from "../site/theme-select.jsx";
 
 export type SessionInfo = {
     sessionToken: string;
@@ -119,6 +123,15 @@ export default function DiscordRoot(): any {
         return (
             <div className="site-page picker-screen">
                 <div className="picker-screen-inner">
+                    {/* Same Light/Auto/Dark selector as the landing masthead.
+                        Discord transmits nothing about its own theme (no SDK
+                        command/event/URL param), so 'auto' following
+                        prefers-color-scheme is the closest automatic match,
+                        and this is where players can override it. */}
+                    <header className="picker-masthead">
+                        <LogoMark size={22} />
+                        <ThemeSelect />
+                    </header>
                     <h1 className="su-display">Pick your pain.</h1>
                     {/* Read at render time: returning from a just-solved
                         puzzle picks up completions mirrored mid-session. */}
