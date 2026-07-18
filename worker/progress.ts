@@ -109,9 +109,19 @@ progressRoutes.post('/', async (context) => {
     const existing = existingRows[0];
 
     // Completion is server-decided and sticky: once completedAt is set for
-    // this (player, puzzle), further writes are ignored outright - this is
-    // what makes a "regress" attempt after solving a no-op.
+    // this (player, puzzle), writes that would REGRESS the board are
+    // ignored. One exception: a write whose digits still equal the full
+    // solution may refresh the stored state blob - the client's
+    // completion-moment save can race its own snapshot cache, and the
+    // immediately-following corrected save must be able to land (otherwise
+    // revisiting a completed puzzle restores a stale board).
     if (existing?.completedAt) {
+        if (currentDigits === puzzle.solution) {
+            await db
+                .update(progress)
+                .set({ state: JSON.stringify(state ?? null), updatedAt: new Date() })
+                .where(and(eq(progress.playerId, session.sub), eq(progress.puzzleId, puzzle.id)));
+        }
         return context.json({ ok: true, completedAt: existing.completedAt.getTime() });
     }
 

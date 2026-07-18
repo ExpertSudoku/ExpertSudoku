@@ -600,7 +600,13 @@ export const modelHelpers = {
             isPaused: !!pausedAt,
             undoList: grid.get('undoList').toArray(),
             redoList: grid.get('redoList').toArray(),
-            currentSnapshot: grid.get('currentSnapshot'),
+            // Derived fresh from the cells rather than the cached
+            // `currentSnapshot`: the solved-state notify fires BEFORE
+            // pushNewSnapshot refreshes the cache, and the write triggered
+            // by that notify is the one the server keeps (sticky
+            // completion) - exporting the cache there would persist a
+            // snapshot one move behind the solution.
+            currentSnapshot: modelHelpers.toSnapshotString(grid),
             hintsUsed: grid.get('hintsUsed').toArray(),
             lastUpdatedTime: Date.now(),
         };
