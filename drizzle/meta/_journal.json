@@ -15,6 +15,13 @@
       "when": 1784385105570,
       "tag": "0001_equal_mandrill",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1784417212107,
+      "tag": "0002_secret_kingpin",
+      "breakpoints": true
     }
   ]
 }

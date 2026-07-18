@@ -4,7 +4,7 @@ import { getDb } from './db';
 import { puzzles, progress, players, liveMessages } from '../db/schema';
 import { renderBoardPng, CellState, EntryStatus, MAX_BOARDS } from './render/board-image';
 import { fetchAvatarPng } from './render/avatars';
-import { sendImageMessage, editImageMessage, MessageComponent } from './discord';
+import { sendImageMessage, editImageMessage, sendWebhookImageMessage, editWebhookImageMessage, MessageComponent } from './discord';
 import { puzzleNumber } from './day';
 import { DIFFICULTIES } from '../shared/difficulties.js';
 
@@ -33,6 +33,10 @@ const LEAVER_SWEEP_DELAY_MS = 25_000;
 // back at the bottom of the channel. The old message stays as a frozen
 // snapshot; the row simply tracks the new id from then on.
 const REPOST_AFTER_MS = 10 * 60 * 1000;
+
+// Interaction webhook tokens are valid for 15 minutes; treat them as usable
+// slightly shorter so an edit/send never races the hard expiry.
+const INTERACTION_TOKEN_FRESH_MS = 14 * 60 * 1000;
 
 function sleep(ms: number): Promise<void> {
     return new Promise((resolve) => setTimeout(resolve, ms));
@@ -220,7 +224,11 @@ export async function maybeUpdateLiveMessage(
         entries,
     });
 
+    const tokenFresh = !!liveMsg.interactionToken && !!liveMsg.interactionTokenAt
+        && Date.now() - liveMsg.interactionTokenAt.getTime() < INTERACTION_TOKEN_FRESH_MS;
+
     let messageId = liveMsg.messageId;
+    let viaWebhook = liveMsg.viaWebhook;
     let needsSend = !messageId;
 
     // Stale for over REPOST_AFTER_MS: repost instead of editing (see the
@@ -228,9 +236,18 @@ export async function maybeUpdateLiveMessage(
     if (messageId && liveMsg.lastEditAt && Date.now() - liveMsg.lastEditAt.getTime() > REPOST_AFTER_MS) {
         needsSend = true;
     }
+    // A webhook-authored message is only editable while its token lives.
+    if (messageId && viaWebhook && !tokenFresh) {
+        needsSend = true;
+    }
 
     if (messageId && !needsSend) {
-        const editResult = await editImageMessage(env, channelId, messageId, content, png, 'board.png', components);
+        const editResult = viaWebhook
+            // Invariant: interactionToken is always the token that authored a
+            // viaWebhook message (interactions.ts drops messageId whenever it
+            // replaces the token of a webhook-authored row).
+            ? await editWebhookImageMessage(env, liveMsg.interactionToken!, messageId, content, png, 'board.png', components)
+            : await editImageMessage(env, channelId, messageId, content, png, 'board.png', components);
         if (!editResult.ok) {
             if (editResult.status === 404 || editResult.status === 403 || editResult.code === 10008) {
                 needsSend = true;
@@ -242,17 +259,30 @@ export async function maybeUpdateLiveMessage(
     }
 
     if (needsSend) {
+        // Bot path first; a 403 means the bot can't post here (not a channel
+        // member - user-installed app), where a fresh interaction token is
+        // the only remaining way to get a message in.
         const sendResult = await sendImageMessage(env, channelId, content, png, 'board.png', components);
-        if (!sendResult.ok) {
+        if (sendResult.ok) {
+            messageId = sendResult.messageId;
+            viaWebhook = false;
+        } else if (sendResult.status === 403 && tokenFresh) {
+            const webhookResult = await sendWebhookImageMessage(env, liveMsg.interactionToken!, content, png, 'board.png', components);
+            if (!webhookResult.ok) {
+                await db.update(liveMessages).set({ dirty: true }).where(eq(liveMessages.id, liveMsg.id));
+                return;
+            }
+            messageId = webhookResult.messageId;
+            viaWebhook = true;
+        } else {
             await db.update(liveMessages).set({ dirty: true }).where(eq(liveMessages.id, liveMsg.id));
             return;
         }
-        messageId = sendResult.messageId;
     }
 
     await db
         .update(liveMessages)
-        .set({ messageId, lastEditAt: new Date(), dirty: false })
+        .set({ messageId, viaWebhook, lastEditAt: new Date(), dirty: false })
         .where(eq(liveMessages.id, liveMsg.id));
 }
 

@@ -52,6 +52,49 @@ export async function sendImageMessage(
     return { ok: true, messageId: body.id };
 }
 
+// Interaction-webhook variants: post/edit through `POST|PATCH /webhooks/
+// {application_id}/{interaction_token}[/messages/{id}]`. The token IS the
+// auth (no bot header), which is what makes this work in channels where the
+// bot isn't a member (user-installed app) - but only for ~15 minutes after
+// the interaction that produced the token.
+export async function sendWebhookImageMessage(
+    env: Env,
+    interactionToken: string,
+    content: string,
+    png: Uint8Array,
+    filename = 'board.png',
+    components?: MessageComponent[]
+): Promise<SendResult> {
+    const response = await fetchAndRetry(
+        `${RouteBases.api}${Routes.webhook(env.VITE_CLIENT_ID, interactionToken)}`,
+        { method: 'POST', body: imageMessageForm({ content, components }, png, filename) }
+    );
+    if (!response.ok) {
+        return { ok: false, status: response.status };
+    }
+    const body = (await response.json()) as { id: string };
+    return { ok: true, messageId: body.id };
+}
+
+export async function editWebhookImageMessage(
+    env: Env,
+    interactionToken: string,
+    messageId: string,
+    content: string,
+    png: Uint8Array,
+    filename = 'board.png',
+    components?: MessageComponent[]
+): Promise<EditResult> {
+    const response = await fetchAndRetry(
+        `${RouteBases.api}${Routes.webhookMessage(env.VITE_CLIENT_ID, interactionToken, messageId)}`,
+        {
+            method: 'PATCH',
+            body: imageMessageForm({ content, attachments: [{ id: 0, filename }], components }, png, filename),
+        }
+    );
+    return { ok: response.ok, status: response.status };
+}
+
 export type EditResult = { ok: boolean; status: number; code?: number };
 
 export async function editImageMessage(

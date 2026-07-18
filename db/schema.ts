@@ -49,6 +49,14 @@ export const liveMessages = sqliteTable('live_messages', {
     messageId: text('message_id'),
     lastEditAt: integer('last_edit_at', { mode: 'timestamp_ms' }),
     dirty: integer('dirty', { mode: 'boolean' }).notNull().default(false),
+    // Fallback for channels where the bot isn't a member (user-installed
+    // app): messages are posted through the interaction webhook of the
+    // latest difficulty-button press instead. `viaWebhook` marks the
+    // tracked message as webhook-authored (editable only with the token
+    // that created it, and only while that token lives - ~15 min).
+    viaWebhook: integer('via_webhook', { mode: 'boolean' }).notNull().default(false),
+    interactionToken: text('interaction_token'),
+    interactionTokenAt: integer('interaction_token_at', { mode: 'timestamp_ms' }),
 }, (table) => ({
     channelDayDifficultyUnique: uniqueIndex('live_messages_channel_day_difficulty_unique')
         .on(table.channelId, table.day, table.difficulty),

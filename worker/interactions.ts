@@ -1,8 +1,9 @@
 import { Hono } from 'hono';
 import { InteractionResponseType, InteractionType } from 'discord-api-types/v10';
-import { eq, and } from 'drizzle-orm';
+import { eq, and, sql } from 'drizzle-orm';
 import { getDb } from './db';
-import { pendingLaunches } from '../db/schema';
+import { pendingLaunches, liveMessages } from '../db/schema';
+import { utcDayString } from './day';
 import { isDifficulty } from '../shared/difficulties.js';
 
 // Discord interactions endpoint (portal: "Interactions Endpoint URL" must
@@ -56,6 +57,9 @@ export async function verifyDiscordSignature(
 
 type Interaction = {
     type: number;
+    // Webhook token for follow-up messages - valid ~15 min. Captured so
+    // live-message.ts can post into channels where the bot isn't a member.
+    token?: string;
     channel_id?: string;
     data?: { custom_id?: string; component_type?: number };
     member?: { user?: { id: string } };
@@ -109,6 +113,37 @@ interactionRoutes.post('/', async (context) => {
                     target: [pendingLaunches.userId, pendingLaunches.channelId],
                     set: { difficulty, createdAt: new Date() },
                 });
+            // Bank the interaction's webhook token on the live-message row
+            // for the difficulty being launched - the ~15 min fallback for
+            // posting when the bot isn't a channel member. A tracked message
+            // authored by an OLDER token can't be edited with this one, so
+            // drop it (next pass posts fresh); bot-authored messages keep
+            // their id, the token is just spare capability then.
+            if (interaction.token) {
+                const now = new Date();
+                await db
+                    .insert(liveMessages)
+                    .values({
+                        channelId,
+                        day: utcDayString(),
+                        difficulty,
+                        messageId: null,
+                        lastEditAt: null,
+                        dirty: false,
+                        viaWebhook: false,
+                        interactionToken: interaction.token,
+                        interactionTokenAt: now,
+                    })
+                    .onConflictDoUpdate({
+                        target: [liveMessages.channelId, liveMessages.day, liveMessages.difficulty],
+                        set: {
+                            interactionToken: interaction.token,
+                            interactionTokenAt: now,
+                            messageId: sql`CASE WHEN ${liveMessages.viaWebhook} THEN NULL ELSE ${liveMessages.messageId} END`,
+                            viaWebhook: sql`0`,
+                        },
+                    });
+            }
             return context.json({ type: InteractionResponseType.LaunchActivity });
         }
         // Unknown button - still launch the activity rather than erroring in
