@@ -27,6 +27,13 @@ const INACTIVE_AFTER_MS = 20_000;
 const DIRTY_FLUSH_DELAY_MS = EDIT_THROTTLE_MS + 1000;
 const LEAVER_SWEEP_DELAY_MS = 25_000;
 
+// If the tracked message hasn't been painted for this long, the next update
+// SENDS a fresh message instead of editing - after a long lull the old one
+// is buried up-thread, and a repost puts the board (and its play buttons)
+// back at the bottom of the channel. The old message stays as a frozen
+// snapshot; the row simply tracks the new id from then on.
+const REPOST_AFTER_MS = 10 * 60 * 1000;
+
 function sleep(ms: number): Promise<void> {
     return new Promise((resolve) => setTimeout(resolve, ms));
 }
@@ -216,7 +223,13 @@ export async function maybeUpdateLiveMessage(
     let messageId = liveMsg.messageId;
     let needsSend = !messageId;
 
-    if (messageId) {
+    // Stale for over REPOST_AFTER_MS: repost instead of editing (see the
+    // constant's comment). lastEditAt is always set alongside messageId.
+    if (messageId && liveMsg.lastEditAt && Date.now() - liveMsg.lastEditAt.getTime() > REPOST_AFTER_MS) {
+        needsSend = true;
+    }
+
+    if (messageId && !needsSend) {
         const editResult = await editImageMessage(env, channelId, messageId, content, png, 'board.png', components);
         if (!editResult.ok) {
             if (editResult.status === 404 || editResult.status === 403 || editResult.code === 10008) {
