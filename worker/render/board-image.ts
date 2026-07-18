@@ -30,11 +30,12 @@ export type BoardParams = {
 export const MAX_BOARDS = 4;
 const MAX_ENTRIES = 8;
 
-const CELL_COLOR: Record<CellState, string> = {
-    given: '#666666',
-    filled: '#5865F2',
-    empty: '#2f2f2f',
-};
+// Given/empty are constant; player-FILLED cells use the difficulty's own
+// accent colour (green/amber/red) rather than blurple, matching the picker
+// rows and completed mini grids.
+const GIVEN_COLOR = '#666666';
+const EMPTY_COLOR = '#2f2f2f';
+const FALLBACK_FILL = '#5865F2';
 
 // The title brands each difficulty as its own daily: "MediumSudoku #12",
 // "ExpertSudoku #12", "HellSudoku #12".
@@ -162,7 +163,17 @@ function renderHeader(title: BoardParams['title']): string {
     return nodes.join('');
 }
 
-function renderBoardCells(cells: CellState[], originX: number, originY: number): string {
+function cellFill(state: CellState, accent: string): string {
+    if (state === 'given') {
+        return GIVEN_COLOR;
+    }
+    if (state === 'filled') {
+        return accent;
+    }
+    return EMPTY_COLOR;
+}
+
+function renderBoardCells(cells: CellState[], originX: number, originY: number, accent: string): string {
     return cells
         .map((state, i) => {
             const row = Math.floor(i / 9);
@@ -170,12 +181,12 @@ function renderBoardCells(cells: CellState[], originX: number, originY: number):
             const x = originX + col * CELL_SIZE + Math.floor(col / 3) * BLOCK_GAP;
             const y = originY + row * CELL_SIZE + Math.floor(row / 3) * BLOCK_GAP;
             const size = CELL_SIZE - CELL_INSET;
-            return `<rect x="${x}" y="${y}" width="${size}" height="${size}" rx="${CELL_RADIUS}" fill="${CELL_COLOR[state]}" />`;
+            return `<rect x="${x}" y="${y}" width="${size}" height="${size}" rx="${CELL_RADIUS}" fill="${cellFill(state, accent)}" />`;
         })
         .join('');
 }
 
-function renderTiles(boards: BoardTile[], defs: string[], nodes: string[]): void {
+function renderTiles(boards: BoardTile[], accent: string, defs: string[], nodes: string[]): void {
     boards.slice(0, MAX_BOARDS).forEach((tile, i) => {
         const gridCol = i % 2;
         const gridRow = Math.floor(i / 2);
@@ -192,7 +203,7 @@ function renderTiles(boards: BoardTile[], defs: string[], nodes: string[]): void
         );
         defs.push(avatar.def);
         nodes.push(avatar.node);
-        nodes.push(renderBoardCells(tile.cells, tileX + TILE_AVATAR_SIZE + TILE_AVATAR_GAP, tileY));
+        nodes.push(renderBoardCells(tile.cells, tileX + TILE_AVATAR_SIZE + TILE_AVATAR_GAP, tileY, accent));
     });
 }
 
@@ -239,7 +250,8 @@ export async function renderBoardPng(params: BoardParams): Promise<Uint8Array> {
     const defs: string[] = [];
     const nodes: string[] = [];
     nodes.push(renderHeader(params.title));
-    renderTiles(params.boards, defs, nodes);
+    const accent = (DIFFICULTY_META[params.title.difficulty] ?? { color: FALLBACK_FILL }).color;
+    renderTiles(params.boards, accent, defs, nodes);
     renderLeaderboard(params.entries, boardCount, height, defs, nodes);
 
     const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}">`
