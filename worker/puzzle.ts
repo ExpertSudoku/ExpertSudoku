@@ -43,10 +43,21 @@ puzzleRoutes.get('/today', async (context) => {
     return context.json({ ...row, number: puzzleNumber(row.day) });
 });
 
-// GET /api/puzzle/meta -> {day, number} for the current UTC day. Used by
-// the landing page to filter already-completed difficulties (the client
-// never computes "today" itself).
-puzzleRoutes.get('/meta', (context) => {
+// GET /api/puzzle/meta -> {day, number, givens} for the current UTC day.
+// `givens` maps difficulty -> 81-char givens string (public data - it IS
+// the puzzle) and powers the real-skeleton mini grids in the difficulty
+// pickers; difficulties without a seeded puzzle are simply absent. The
+// client never computes "today" itself.
+puzzleRoutes.get('/meta', async (context) => {
     const day = utcDayString();
-    return context.json({ day, number: puzzleNumber(day) });
+    const db = getDb(context.env);
+    const rows = await db
+        .select({ difficulty: puzzles.difficulty, givens: puzzles.givens })
+        .from(puzzles)
+        .where(eq(puzzles.day, day));
+    const givens: Record<string, string> = {};
+    for (const row of rows) {
+        givens[row.difficulty] = row.givens;
+    }
+    return context.json({ day, number: puzzleNumber(day), givens });
 });

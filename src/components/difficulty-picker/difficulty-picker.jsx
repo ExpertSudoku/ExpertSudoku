@@ -1,5 +1,8 @@
+import { useEffect, useState } from 'react';
+
 import { DIFFICULTIES } from '../../../shared/difficulties.js';
 import { MINI_GRID_PATTERNS } from './mini-grid.js';
+import { fetchPuzzleMeta } from '../../lib/api.ts';
 
 import './difficulty-picker.css';
 
@@ -10,6 +13,25 @@ const META = {
     expert: { accent: 'Expert', pips: 2, description: 'Pairs, pointing pairs, box/line reduction.' },
     hell: { accent: 'Hell', pips: 3, description: 'Everything else. Bring coffee.' },
 };
+
+// Today's real givens per difficulty, fetched once per page load and shared
+// by every picker instance (module-level cache). While loading (or if the
+// fetch fails / a difficulty isn't seeded), rows fall back to the
+// deterministic placeholder patterns from mini-grid.js.
+let cachedGivens = null;
+let cachedGivensPromise = null;
+function loadTodaysGivens() {
+    if (!cachedGivensPromise) {
+        cachedGivensPromise = fetchPuzzleMeta().then((meta) => {
+            cachedGivens = (!meta.error && meta.givens) ? meta.givens : {};
+            return cachedGivens;
+        }).catch(() => {
+            cachedGivens = {};
+            return cachedGivens;
+        });
+    }
+    return cachedGivensPromise;
+}
 
 function Pips({ count }) {
     return (
@@ -23,13 +45,15 @@ function Pips({ count }) {
     );
 }
 
-// The signature motif: a 9x9 redacted grid whose given-cell density is the
-// real difference between the difficulties. Hovering the row "solves" the
-// remaining cells in the difficulty's colour, back-to-front stagger on
-// leave. Rendered as 3x3 blocks of 3x3 cells so the block gaps read like a
-// real board.
-function MiniGrid({ difficulty }) {
-    const pattern = MINI_GRID_PATTERNS[difficulty];
+// The signature motif: a 9x9 redacted grid. With `givens` (an 81-char digit
+// string) it is the SKELETON OF TODAY'S ACTUAL PUZZLE - given cells filled,
+// the rest empty; without it, the deterministic placeholder pattern.
+// Hovering the row "solves" the remaining cells in the difficulty's colour.
+// Rendered as 3x3 blocks of 3x3 cells so the block gaps read like a real
+// board.
+function MiniGrid({ difficulty, givens }) {
+    const fallback = MINI_GRID_PATTERNS[difficulty];
+    const isGivenAt = (index) => (givens ? givens[index] !== '0' : fallback[index]);
     return (
         <span className="mini-grid" aria-hidden="true">
             {Array.from({ length: 9 }, (_, block) => (
@@ -38,7 +62,7 @@ function MiniGrid({ difficulty }) {
                         const row = Math.floor(block / 3) * 3 + Math.floor(cell / 3);
                         const col = (block % 3) * 3 + (cell % 3);
                         const index = row * 9 + col;
-                        const isGiven = pattern[index];
+                        const isGiven = isGivenAt(index);
                         return (
                             <span
                                 key={cell}
@@ -59,6 +83,16 @@ function MiniGrid({ difficulty }) {
 // description.
 export default function DifficultyPicker({ onPick, completed }) {
     const done = completed ? [].concat(completed) : [];
+    const [givensByDifficulty, setGivensByDifficulty] = useState(cachedGivens);
+    useEffect(() => {
+        let cancelled = false;
+        loadTodaysGivens().then((givens) => {
+            if (!cancelled) {
+                setGivensByDifficulty(givens);
+            }
+        });
+        return () => { cancelled = true; };
+    }, []);
     return (
         <div className="difficulty-picker">
             {DIFFICULTIES.map((difficulty) => {
@@ -82,7 +116,7 @@ export default function DifficultyPicker({ onPick, completed }) {
                                 ? <span className="difficulty-description difficulty-done-hint">Already completed today</span>
                                 : <span className="difficulty-description">{meta.description}</span>}
                         </span>
-                        <MiniGrid difficulty={difficulty} />
+                        <MiniGrid difficulty={difficulty} givens={givensByDifficulty?.[difficulty]} />
                     </button>
                 );
             })}

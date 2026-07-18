@@ -17,6 +17,8 @@ export type TodayPuzzle = {
 export type PuzzleMeta = {
     day: string;
     number: number;
+    // difficulty -> 81-char givens string for today (absent if not seeded).
+    givens: Partial<Record<Difficulty, string>>;
 };
 
 export async function fetchPuzzleMeta(): Promise<PuzzleMeta | ApiError> {

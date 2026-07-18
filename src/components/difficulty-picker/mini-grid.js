@@ -1,4 +1,6 @@
-// Deterministic redacted-grid patterns for the difficulty picker rows.
+// Deterministic FALLBACK patterns for the difficulty picker rows - shown
+// only while today's real givens (fetched from /api/puzzle/meta) are
+// loading, or if that fetch fails.
 //
 // The clue counts are truthful: they match the seed generator's carving
 // targets (scripts/generate-puzzles.mjs) - Medium really does hand you far
