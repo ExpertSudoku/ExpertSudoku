@@ -1,5 +1,4 @@
 import {
-    MODAL_TYPE_CHECK_RESULT,
     MODAL_TYPE_CONFIRM_RESTART,
     MODAL_TYPE_HELP,
     MODAL_TYPE_CONFIRM_CLEAR_COLOR_HIGHLIGHTS,
@@ -7,7 +6,6 @@ import {
 
 import ModalConfirmRestart from './modal-confirm-restart';
 import ModalConfirmClearColorHighlights from './modal-confirm-clear-color-highlights'
-import ModalCheckResult from './modal-check-result';
 import HelpPage from '../help/help';
 
 import "./modal.css";
@@ -37,9 +35,6 @@ export default function ModalContainer({modalState, modalHandler, menuHandler}) 
     }
     else if (modalState.modalType === MODAL_TYPE_CONFIRM_CLEAR_COLOR_HIGHLIGHTS) {
         content = <ModalConfirmClearColorHighlights modalHandler={modalHandler} />;
-    }
-    else if (modalState.modalType === MODAL_TYPE_CHECK_RESULT) {
-        content = <ModalCheckResult modalState={modalState} modalHandler={modalHandler} />;
     }
     else if (modalState.modalType === MODAL_TYPE_HELP) {
         content = <HelpPage modalHandler={modalHandler} />;

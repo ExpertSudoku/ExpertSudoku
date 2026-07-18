@@ -5,6 +5,7 @@ import Spinner from '../spinner/spinner.tsx';
 import DifficultyPicker from '../difficulty-picker/difficulty-picker.jsx';
 import { fetchTodayPuzzle, fetchProgress } from '../../lib/api.ts';
 import { createServerAdapter } from '../../lib/save-adapter.js';
+import { recordCompletion, getCompletedDifficulties } from '../../lib/completions.js';
 
 // Each difficulty is its own daily brand, matching the picker rows and the
 // board images posted to Discord.
@@ -72,6 +73,16 @@ export default function DiscordPlay({ difficulty, session, onExit, onSwitchDiffi
     }, [session.sessionToken, difficulty]);
     useEffect(() => () => stateAdapter.destroy(), [stateAdapter]);
 
+    // Mirror completions into the client-side record (src/lib/completions.js)
+    // so difficulty pickers can hide already-finished difficulties without a
+    // server round-trip.
+    const day = (data && !data.error) ? data.puzzle.day : null;
+    useEffect(() => {
+        if (completed && day) {
+            recordCompletion(day, difficulty);
+        }
+    }, [completed, day, difficulty]);
+
     if (data === null) {
         return (<div className="site-page"><Spinner /></div>);
     }
@@ -106,7 +117,10 @@ export default function DiscordPlay({ difficulty, session, onExit, onSwitchDiffi
                             : null}
                     </h1>
                     <p className="completion-next">Fancy another one?</p>
-                    <DifficultyPicker onPick={onSwitchDifficulty ?? onExit} />
+                    <DifficultyPicker
+                        completed={[difficulty, ...getCompletedDifficulties(day)]}
+                        onPick={onSwitchDifficulty ?? onExit}
+                    />
                 </div>
             </div>
         );
@@ -116,9 +130,13 @@ export default function DiscordPlay({ difficulty, session, onExit, onSwitchDiffi
         <App
             initialDigits={data.puzzle.givens}
             difficultyLevel={difficulty}
+            puzzleNumber={data.puzzle.number}
             savedState={data.progress.state}
             stateAdapter={stateAdapter}
             onExit={onExit}
+            onSwitchDifficulty={onSwitchDifficulty ?? onExit}
+            completedDifficulties={getCompletedDifficulties(day)}
+            devSolution={data.puzzle.solution}
         />
     );
 }

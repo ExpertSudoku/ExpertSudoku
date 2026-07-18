@@ -48,6 +48,34 @@
     /* Height of the in-game header (status bar); #root reserves this much
      * top padding and .site-page swallows it again on shell screens. */
     --header-height: 5rem;
+
+    /* Height of the dev-build banner; 0 in production, set on :root.dev
+     * (class added by index.tsx in development builds only). */
+    --dev-banner-h: 0rem;
+}
+
+:root.dev {
+    --dev-banner-h: 1.6rem;
+}
+
+/* Development-build banner, pinned above everything (incl. the game
+ * header, which shifts down by --dev-banner-h). */
+.dev-banner {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: var(--dev-banner-h);
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--su-expert);
+    color: #1b1b1e;
+    font-family: var(--su-mono);
+    font-weight: 700;
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
 }
 
 /* Light theme (documentElement class set by src/lib/theme.js and the inline

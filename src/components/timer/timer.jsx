@@ -29,6 +29,9 @@ function Timer({startTime, intervalStartTime, endTime, pausedAt, onPause, onResu
     if (!startTime) {
         return null;
     }
+    // Rendered even after solve (endTime set): the .solved CSS makes it
+    // visibility:hidden, which keeps its layout space so the timer chip
+    // doesn't change size when the game completes.
     const pauseButton = (onPause && onResume && !endTime)
         ? <PauseButton isPaused={!!pausedAt} onPause={onPause} onResume={onResume} />
         : null;

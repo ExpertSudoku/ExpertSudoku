@@ -8,7 +8,25 @@ export type TodayPuzzle = {
     day: string;
     difficulty: Difficulty;
     givens: string;
+    // Absolute daily puzzle number (#N since the launch epoch).
+    number: number;
+    // Development builds only - the worker never sends this in production.
+    solution?: string;
 };
+
+export type PuzzleMeta = {
+    day: string;
+    number: number;
+};
+
+export async function fetchPuzzleMeta(): Promise<PuzzleMeta | ApiError> {
+    const response = await fetch('/api/puzzle/meta');
+    const body = await response.json();
+    if (!response.ok) {
+        return { error: body?.error || `http-${response.status}` };
+    }
+    return body as PuzzleMeta;
+}
 
 export type ApiError = {
     error: string;

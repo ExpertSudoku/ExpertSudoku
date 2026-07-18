@@ -1,11 +1,9 @@
 import { List, Map, Range, Set } from './not-mutable';
 import { cellSet, cellProp } from './sudoku-cell-sets';
 import { expandPuzzleDigits } from './string-utils';
-import { findSolutions, tryCandidates, findCandidatesForCell } from '../../shared/solver.js';
 
 import {
     MODAL_TYPE_INVALID_INITIAL_DIGITS,
-    MODAL_TYPE_CHECK_RESULT,
     MODAL_TYPE_CONFIRM_RESTART,
     MODAL_TYPE_CONFIRM_CLEAR_COLOR_HIGHLIGHTS,
     MODAL_TYPE_HELP,
@@ -100,7 +98,7 @@ export function newSudokuModel({initialDigits, difficultyLevel, onPuzzleStateCha
     });
     return initialError
         ? modelHelpers.setInitialDigits(grid, initialDigits, initialError, entryPoint)
-        : modelHelpers.setGivenDigits(grid, initialDigits, {skipCheck});
+        : modelHelpers.setGivenDigits(grid, initialDigits);
 };
 
 function actionsBlocked(grid) {
@@ -196,7 +194,7 @@ export const modelHelpers = {
         return;
     },
 
-    setGivenDigits: (grid, initialDigits, options) => {
+    setGivenDigits: (grid, initialDigits) => {
         const cells = Range(0, 81).toList().map(i => newCell(i, initialDigits[i]));
         const puzzleStateKey = 'save-' + initialDigits;
         grid = modelHelpers.checkCompletedDigits(grid.merge({
@@ -208,22 +206,11 @@ export const modelHelpers = {
         if (difficultyRating) {
             grid = grid.set('difficultyRating', difficultyRating);
         }
-        if (options.skipCheck) {
-            return grid;
-        }
-        const digits = initialDigits.split('');
-        const result = modelHelpers.findSolutions(digits);
-        if (result.uniqueSolution) {
-            grid = grid.set('finalDigits', result.finalDigits);
-        }
-        else {
-            grid = grid.set('modalState', {
-                modalType: MODAL_TYPE_CHECK_RESULT,
-                icon: 'warning',
-                errorMessage: result.error,
-                escapeAction: 'close',
-            });
-        }
+        // No client-side unique-solution check (and no computed solution):
+        // puzzles are generated and uniqueness-validated by the seed script
+        // (scripts/generate-puzzles.mjs) before they ever reach a client.
+        // Solve detection is "grid full with no conflicts" (checkDigits),
+        // which for a validated puzzle is exactly the solution.
         return grid;
     },
 
@@ -306,7 +293,7 @@ export const modelHelpers = {
         }
     },
 
-    checkDigits: (digits, finalDigits) => {
+    checkDigits: (digits) => {
         const result = {
             isSolved: false,
         };
@@ -341,15 +328,7 @@ export const modelHelpers = {
             c[d] = (digitTally[d] === 9);
             return c;
         }, {});
-        let errorCount = Object.keys(errorAtIndex).length;
-        if (finalDigits && errorCount === 0) {
-            for (let i = 0; i < 81; i++) {
-                if(digits[i] !== '0' && digits[i] !== finalDigits[i]) {
-                    errorAtIndex[i] = 'Incorrect digit';
-                    errorCount++;
-                }
-            }
-        }
+        const errorCount = Object.keys(errorAtIndex).length;
         if (errorCount > 0) {
             result.hasErrors = true;
             result.errorAtIndex = errorAtIndex;
@@ -363,13 +342,27 @@ export const modelHelpers = {
         return result;
     },
 
-    // findCandidatesForCell/findSolutions/tryCandidates moved to shared/solver.js
-    // (Phase 2a) so the seed-generation script can import a dependency-free
-    // solver from plain Node. Kept here as thin re-exports for any external
-    // callers of modelHelpers.*.
-    findCandidatesForCell,
-    findSolutions,
-    tryCandidates,
+    // Dev-only: fill every non-given cell from the provided solution string.
+    // The solution only ever reaches the client in development builds (the
+    // worker strips it in production), so this is inert in production.
+    applyDevSolution: (grid, solution) => {
+        if (actionsBlocked(grid) || typeof solution !== 'string' || !solution.match(/^[1-9]{81}$/)) {
+            return grid;
+        }
+        const snapshotBefore = grid.get('currentSnapshot');
+        const newCells = grid.get('cells').map(c => {
+            if (c.get('isGiven')) {
+                return c;
+            }
+            return modelHelpers.updateCellSnapshotCache(c.merge({
+                digit: solution[c.get('index')],
+                outerPencils: emptySet,
+                innerPencils: emptySet,
+            }));
+        });
+        grid = modelHelpers.checkCompletedDigits(grid.set('cells', newCells));
+        return modelHelpers.pushNewSnapshot(grid, snapshotBefore);
+    },
 
     pushNewSnapshot: (grid, snapshotBefore) => {
         const snapshotAfter = modelHelpers.toSnapshotString(grid);
@@ -622,12 +615,10 @@ export const modelHelpers = {
         if (!modelHelpers.getSetting(grid, SETTINGS.autoSave)) {
             return;
         }
-        const solved = grid.get('solved');
         const puzzleStateKey = grid.get("puzzleStateKey");
-        if (solved) {
-            localStorage.removeItem(puzzleStateKey);
-            return;
-        }
+        // Solved states are kept (not deleted, as upstream did): reloading a
+        // solved puzzle should show the completed board and the
+        // switch-difficulty options, not a fresh grid.
         // Don't bother saving if there's no progress to save yet
         const currentSnapshot = grid.get('currentSnapshot');
         const previousSave = localStorage.getItem(puzzleStateKey) || '';
@@ -717,7 +708,7 @@ export const modelHelpers = {
             pausedAt: isPaused ? Date.now() : undefined,
             modalState: undefined,
         });
-        grid = modelHelpers.setGivenDigits(grid, initialDigits, {fromPuzzleState: true});
+        grid = modelHelpers.setGivenDigits(grid, initialDigits);
         grid = modelHelpers.restoreSnapshot(grid, currentSnapshot);
         grid = modelHelpers.checkCompletedDigits(grid);
         modelHelpers.notifyPuzzleStateChange(grid);
@@ -789,51 +780,6 @@ export const modelHelpers = {
                 inputMode: 'digit',
             });
         });
-    },
-
-    gameOverCheck: (grid) => {
-        const digits = grid.get('cells').map(c => c.get('digit')).join('');
-        const finalDigits = grid.get('finalDigits');
-        const result = modelHelpers.checkDigits(digits, finalDigits);
-        if (result.hasErrors) {
-            grid = modelHelpers.applyErrorHighlights(grid, result.errorAtIndex);
-            grid = grid.set('modalState', {
-                modalType: MODAL_TYPE_CHECK_RESULT,
-                icon: 'error',
-                errorMessage: 'Errors found in highlighted cells',
-                escapeAction: 'close',
-            });
-        }
-        else if (grid.get('mode') === 'enter') {
-            const digits = grid.get('cells').map(c => c.get('digit')).toArray();
-            const result = modelHelpers.findSolutions(digits);
-            if (result.uniqueSolution) {
-                grid = grid.set('modalState', {
-                    modalType: MODAL_TYPE_CHECK_RESULT,
-                    icon: 'ok',
-                    errorMessage: 'Looks good - this arrangement has a unique solution',
-                    escapeAction: 'close',
-                });
-            }
-            else {
-                grid = grid.set('modalState', {
-                    modalType: MODAL_TYPE_CHECK_RESULT,
-                    icon: 'warning',
-                    errorMessage: result.error,
-                    escapeAction: 'close',
-                });
-            }
-        }
-        else if (result.incompleteCount) {
-            const s = result.incompleteCount === 1 ? '' : 's';
-            grid = grid.set('modalState', {
-                modalType: MODAL_TYPE_CHECK_RESULT,
-                icon: 'ok',
-                errorMessage: `No conflicting digits were found, but ${result.incompleteCount} cell${s} not yet filled`,
-                escapeAction: 'close',
-            });
-        }
-        return grid;
     },
 
     applyErrorHighlights: (grid, errorAtIndex = {}) => {

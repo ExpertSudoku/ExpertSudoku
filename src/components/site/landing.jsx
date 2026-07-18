@@ -1,11 +1,29 @@
+import { useEffect, useState } from 'react';
+
 import DifficultyPicker from '../difficulty-picker/difficulty-picker.jsx';
 import ThemeSelect from './theme-select.jsx';
 import { navigate, NavLink } from './site-root.tsx';
+import { fetchPuzzleMeta } from '../../lib/api.ts';
+import { getCompletedDifficulties } from '../../lib/completions.js';
 
 import './landing.css';
 
 export default function Landing() {
     const onPick = (difficulty) => navigate(`/play?difficulty=${difficulty}`);
+    // Difficulties already completed today are hidden from the picker. The
+    // current day comes from the server (/api/puzzle/meta) - until it loads
+    // (or if it fails), everything is shown.
+    const [completed, setCompleted] = useState([]);
+    useEffect(() => {
+        let cancelled = false;
+        fetchPuzzleMeta().then((meta) => {
+            if (!cancelled && !meta.error) {
+                setCompleted(getCompletedDifficulties(meta.day));
+            }
+        });
+        return () => { cancelled = true; };
+    }, []);
+    const allDone = completed.length >= 3;
     return (
         <div className="site-page landing">
             <div className="landing-column">
@@ -25,7 +43,16 @@ export default function Landing() {
                     Pick your pain.
                 </h1>
 
-                <DifficultyPicker onPick={onPick} />
+                {allDone
+                    ? (
+                        <p className="landing-alldone">
+                            All three solved for today. New puzzles at 00:00 UTC <br />
+                            see you tomorrow!
+                        </p>
+                    )
+                    : null}
+
+                <DifficultyPicker onPick={onPick} completed={completed} />
 
                 <p className="landing-meta">
                     Everyone plays the same grid. New puzzles at 00:00 UTC.

@@ -231,7 +231,7 @@ body {
 
 #root {
     box-sizing: border-box;
-    padding-top: var(--header-height, 7.5vh);
+    padding-top: calc(var(--header-height, 7.5vh) + var(--dev-banner-h, 0rem));
     height: 100%;
     width: 100%;
     color: var(--text-color);

@@ -13,8 +13,11 @@ import WebPlay from '../app/web-play.jsx';
 // page is shown. There are only 4 static routes + /play, so react-router
 // would add nothing here.
 
+// Includes the query string: navigating /play?difficulty=expert ->
+// /play?difficulty=hell must produce a new state value or React bails on
+// the re-render (the pathname alone doesn't change).
 function currentPath(): string {
-    return window.location.pathname;
+    return window.location.pathname + window.location.search;
 }
 
 export function navigate(path: string): void {
@@ -59,7 +62,7 @@ export default function SiteRoot() {
         return <DiscordRoot />;
     }
 
-    switch (path) {
+    switch (path.split('?')[0]) {
         case '/play':
             return <WebPlay />;
         case '/imprint':

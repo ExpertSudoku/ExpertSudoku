@@ -24,8 +24,10 @@
     margin: 0;
 }
 
-.solved-puzzle-options button,
-.solved-puzzle-options a.btn {
+/* Scoped to the panel's own action buttons - the difficulty picker rows
+ * inside the panel keep their own styling. */
+.solved-puzzle-options > button,
+.solved-puzzle-options > a.btn {
     display: block;
     box-sizing: border-box;
     width: 11em;
@@ -39,4 +41,25 @@
     background-color: var(--button-bg-color);
     border-radius: 8px;
     border: none;
+}
+
+/* Picker rows use rem sizing, independent of the panel's vw/vh font. */
+.solved-puzzle-options .difficulty-picker {
+    font-size: 1rem;
+}
+
+.solved-puzzle-options .solved-time {
+    font-family: var(--su-mono, monospace);
+    font-weight: 700;
+}
+
+.solved-puzzle-options .solved-next {
+    margin-top: 1em;
+    font-size: 0.8em;
+    color: var(--su-dim, #8a8a8a);
+}
+
+.solved-puzzle-options .difficulty-picker {
+    margin-top: 0.5em;
+    text-align: left;
 }

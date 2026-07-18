@@ -53,16 +53,23 @@ function MiniGrid({ difficulty }) {
     );
 }
 
-export default function DifficultyPicker({ onPick }) {
+// `completed` (optional): a difficulty or array of difficulties already
+// completed today (src/lib/completions.js) - those rows stay visible but
+// are greyed out, disabled, and show a "completed" hint instead of their
+// description.
+export default function DifficultyPicker({ onPick, completed }) {
+    const done = completed ? [].concat(completed) : [];
     return (
         <div className="difficulty-picker">
             {DIFFICULTIES.map((difficulty) => {
                 const meta = META[difficulty];
+                const isDone = done.includes(difficulty);
                 return (
                     <button
                         key={difficulty}
                         type="button"
-                        className={`difficulty-row difficulty-${difficulty}`}
+                        className={`difficulty-row difficulty-${difficulty}${isDone ? ' is-completed' : ''}`}
+                        disabled={isDone}
                         onClick={() => onPick(difficulty)}
                     >
                         <span className="difficulty-info">
@@ -71,7 +78,9 @@ export default function DifficultyPicker({ onPick }) {
                                 <span className="difficulty-name-accent">{meta.accent}</span>
                                 {meta.rest}
                             </span>
-                            <span className="difficulty-description">{meta.description}</span>
+                            {isDone
+                                ? <span className="difficulty-description difficulty-done-hint">Already completed today</span>
+                                : <span className="difficulty-description">{meta.description}</span>}
                         </span>
                         <MiniGrid difficulty={difficulty} />
                     </button>

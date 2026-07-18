@@ -87,3 +87,14 @@
 .landing-footer a:hover {
     color: var(--su-ink);
 }
+
+.landing-alldone {
+    margin: 0;
+    margin-bottom: .9rem;
+    padding: 1.25rem;
+    border: 1px solid var(--su-line);
+    border-left: 3px solid var(--su-medium);
+    border-radius: 10px;
+    background: var(--su-panel);
+    color: var(--su-ink);
+}

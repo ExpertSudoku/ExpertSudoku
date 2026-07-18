@@ -221,10 +221,6 @@ function docKeyDownHandler (e, modalActive, setGrid, solved, inputMode) {
         setGrid((grid) => modelHelpers.showHelpPage(grid));
         return;
     }
-    else if (keyName === "Enter") {
-        setGrid((grid) => modelHelpers.gameOverCheck(grid));
-        return;
-    }
     else if (keyName === "Home") {
         setGrid((grid) => modelHelpers.applySelectionOp(grid, 'setSelection', modelHelpers.CENTER_CELL));
         return;
@@ -369,10 +365,6 @@ function vkbdKeyPressHandler(e, setGrid, inputMode) {
         setGrid((grid) => modelHelpers.updateSelectedCells(grid, 'clearCell'));
         return;
     }
-    else if (keyValue === 'check') {
-        setGrid((grid) => modelHelpers.gameOverCheck(grid));
-        return;
-    }
     else if (keyValue === 'undo') {
         setGrid((grid) => modelHelpers.undoOneAction(grid));
         return;
@@ -432,7 +424,7 @@ function getDimensions(winSize) {
     return dim;
 }
 
-function App({ initialDigits, difficultyLevel, savedState, stateAdapter, onExit }) {
+function App({ initialDigits, difficultyLevel, puzzleNumber, savedState, stateAdapter, onExit, onSwitchDifficulty, completedDifficulties, devSolution }) {
     const [progressTracker] = useState(() => {
         const progressParams = parseProgressParams();
         return createProgressTracker(
@@ -467,6 +459,12 @@ function App({ initialDigits, difficultyLevel, savedState, stateAdapter, onExit 
     const menuHandler = useCallback(a => dispatchMenuAction(a, setGrid), []);
     const pauseHandler = useCallback(() => setGrid(g => modelHelpers.pauseTimer(g)), []);
     const resumeHandler = useCallback(() => setGrid(g => modelHelpers.resumeTimer(g)), []);
+    // Dev builds only: devSolution is undefined in production (the server
+    // never sends it), so no SOLVE control is offered there.
+    const solveHandler = useCallback(
+        () => setGrid(g => modelHelpers.applyDevSolution(g, devSolution)),
+        [devSolution]
+    );
 
     useEffect(
         () => {
@@ -544,6 +542,8 @@ function App({ initialDigits, difficultyLevel, savedState, stateAdapter, onExit 
                 onResume={resumeHandler}
                 onExit={onExit}
                 menuHandler={menuHandler}
+                onSolve={devSolution ? solveHandler : undefined}
+                puzzleNumber={puzzleNumber}
             />
             <div className="ui-elements">
                 <SudokuGrid
@@ -561,7 +561,8 @@ function App({ initialDigits, difficultyLevel, savedState, stateAdapter, onExit 
                             ? (
                                 <SolvedPuzzleOptions
                                     elapsedTime={Math.floor((endTime - intervalStartTime) / 1000)}
-                                    menuHandler={menuHandler}
+                                    completed={[difficultyLevel, ...(completedDifficulties || [])]}
+                                    onSwitchDifficulty={onSwitchDifficulty}
                                 />
                             )
                             : <>

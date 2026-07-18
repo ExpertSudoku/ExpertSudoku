@@ -46,33 +46,6 @@
     border-bottom: 1px solid var(--modal-heading-underline-color);
 }
 
-.modal.check-result .icon-message {
-    display: flex;
-    align-items: flex-start;
-    margin: 0.3em;
-}
-
-.modal.check-result .icon svg {
-    margin-right: 1em;
-    width: 2.4em;
-}
-
-.icon.check-result-ok use {
-    fill: var(--modal-icon-ok-fill-color);
-}
-
-.icon.check-result-warning use {
-    fill: var(--modal-icon-warning-fill-color);
-}
-
-.icon.check-result-error use {
-    fill: var(--modal-icon-error-fill-color);
-}
-
-.modal.check-result .message {
-    align-self: center;
-}
-
 .modal .buttons {
     margin-top: 1.0em;
     text-align: right;
@@ -679,10 +652,6 @@ input.toggle:checked+.indicator::before {
 
     .difficulty-options {
         font-size: 4.5vw;
-    }
-
-    .modal.check-result .icon img {
-        width: 2.4em;
     }
 }
 

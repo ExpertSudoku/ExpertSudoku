@@ -3,20 +3,20 @@ export default function ModalConfirmRestart({modalHandler, solved}) {
     const restartHandler = () => modalHandler('restart-confirmed');
     return (
         <div className="modal confirm-restart">
-            <h1>Restart the puzzle?</h1>
+            <h1>Reset the puzzle?</h1>
             {
                 solved
                     ? (
-                        <p>Are you sure you wish to restart?</p>
+                        <p>Are you sure you wish to reset the puzzle?</p>
                     )
                     : (
-                        <p>Are you sure you wish to discard all the numbers and
-                        pencil-marks you've entered?</p>
+                        <p>This removes every digit, pencil-mark and colour
+                        highlight you&apos;ve entered. There is no undo.</p>
                     )
             }
             <div className="buttons">
                 <button className="cancel" onClick={cancelHandler}>Cancel</button>
-                <button className="danger" onClick={restartHandler} autoFocus>Restart</button>
+                <button className="danger" onClick={restartHandler} autoFocus>Reset</button>
             </div>
         </div>
     )

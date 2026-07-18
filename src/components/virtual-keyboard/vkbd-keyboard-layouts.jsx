@@ -64,8 +64,8 @@ const landscapePlayButtonDefs = [
         fontSize: 90,
     },
     {
-        value: "check",
-        text: "Check",
+        value: "restart",
+        text: "Reset",
         left: 520,
         top: 970,
         width: 440,
@@ -84,12 +84,6 @@ const landscapePlayButtonDefs = [
         icon: "redo",
         left: 760,
         top: 490,
-    },
-    {
-        value: "restart",
-        icon: "restart",
-        left: 760,
-        top: 730,
     },
 ];
 
@@ -175,8 +169,8 @@ const portraitPlayButtonDefs = [
         fontSize: 90,
     },
     {
-        value: "check",
-        icon: "check",
+        value: "restart",
+        icon: "restart",
         left: 760,
         top: 250,
         width: 200,
@@ -195,12 +189,6 @@ const portraitPlayButtonDefs = [
         icon: "redo",
         left: 1000,
         top: 490,
-    },
-    {
-        value: "restart",
-        icon: "restart",
-        left: 1000,
-        top: 250,
     },
 ];
 

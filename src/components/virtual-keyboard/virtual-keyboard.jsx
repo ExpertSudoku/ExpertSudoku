@@ -138,9 +138,8 @@ export default function VirtualKeyboard({dimensions, inputMode, completedDigits,
         color: 'Colour cell background, double-click to clear',
         undo: 'Undo last change - Ctrl+Z or [',
         redo: 'Redo last change - Ctrl+Y or ]',
-        restart: 'Restart the puzzle',
+        restart: 'Reset the puzzle - removes everything you have entered',
         delete: 'Delete digits, pencil-marks & color highlights',
-        check: 'Check grid for conflicting digits',
     };
     const modeButtons = simplePencilMarking
         ? ['digit', 'simple', 'color']

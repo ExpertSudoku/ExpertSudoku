@@ -6,10 +6,20 @@ import './index.css'
 import './site-theme.css'
 // @ts-ignore
 import { initTheme } from './lib/theme.js'
+// @ts-ignore
+import { cleanupExpiredPuzzleSaves } from './lib/storage-cleanup.js'
+import SiteRoot from "./components/site/site-root.tsx";
+// @ts-ignore
+import DevBanner from "./components/site/dev-banner.jsx";
 
 initTheme()
-import SiteRoot from "./components/site/site-root.tsx";
+cleanupExpiredPuzzleSaves()
 
+// Development builds get a banner above everything and layout room for it
+// (--dev-banner-h activates via the `dev` root class).
+if (import.meta.env.DEV) {
+    document.documentElement.classList.add('dev')
+}
 
 const element = document.getElementById('root')
 if (!element) {
@@ -17,6 +27,7 @@ if (!element) {
 }
 createRoot(element).render(
     <StrictMode>
+        <DevBanner />
         <SiteRoot />
     </StrictMode>,
 )

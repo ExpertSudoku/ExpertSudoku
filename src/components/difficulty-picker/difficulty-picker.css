@@ -29,10 +29,22 @@
 .difficulty-expert { --row-accent: var(--su-expert); }
 .difficulty-hell { --row-accent: var(--su-hell); }
 
-.difficulty-row:hover,
-.difficulty-row:focus-visible {
+.difficulty-row:hover:not(:disabled),
+.difficulty-row:focus-visible:not(:disabled) {
     border-color: var(--row-accent);
     transform: translateY(-2px);
+}
+
+/* Already completed today: visible but inert - greyed, no hover effects,
+ * hint instead of the description. */
+.difficulty-row.is-completed {
+    cursor: default;
+    opacity: 0.55;
+}
+
+.difficulty-row.is-completed .difficulty-done-hint {
+    color: var(--su-medium);
+    font-weight: 600;
 }
 
 .difficulty-info {
@@ -96,8 +108,13 @@
     background: var(--su-given);
 }
 
-.difficulty-row:hover .mini-cell:not(.is-given),
-.difficulty-row:focus-visible .mini-cell:not(.is-given) {
+.difficulty-row:hover:not(:disabled) .mini-cell:not(.is-given),
+.difficulty-row:focus-visible:not(:disabled) .mini-cell:not(.is-given) {
+    background: var(--row-accent);
+}
+
+/* Completed rows show their grid fully "solved" in the accent colour. */
+.difficulty-row.is-completed .mini-cell:not(.is-given) {
     background: var(--row-accent);
 }
 

@@ -28,13 +28,16 @@ function Pips ({ count }) {
     );
 }
 
-function Wordmark ({ difficulty }) {
+function Wordmark ({ difficulty, puzzleNumber }) {
     const mark = WORDMARKS[difficulty] ?? { accent: 'Expert', rest: 'Sudoku', pips: 2 };
     return (
         <span className={`site-name difficulty-${difficulty}`}>
             <Pips count={mark.pips} />
             <span className="site-name-accent">{mark.accent}</span>
             <span className="site-name-rest">{mark.rest}</span>
+            {puzzleNumber
+                ? <span className="site-name-number">#{puzzleNumber}</span>
+                : null}
         </span>
     );
 }
@@ -42,7 +45,7 @@ function Wordmark ({ difficulty }) {
 // Header styled like the landing masthead: wordmark on the left, a row of
 // bordered chips (timer + pause, back, help, theme) on the right.
 function StatusBar ({
-    grid, showTimer, startTime, intervalStartTime, endTime, pausedAt, onPause, onResume, onExit, menuHandler
+    grid, showTimer, startTime, intervalStartTime, endTime, pausedAt, onPause, onResume, onExit, menuHandler, onSolve, puzzleNumber
 }) {
     const timer = showTimer
         ? (
@@ -59,8 +62,13 @@ function StatusBar ({
     const exitButton = onExit ? <ExitButton onExit={onExit} /> : null;
     return (
         <header className="status-bar" onMouseDown={stopPropagation}>
-            <Wordmark difficulty={grid.get('difficultyLevel')} />
+            <Wordmark difficulty={grid.get('difficultyLevel')} puzzleNumber={puzzleNumber} />
             <div className="status-bar-controls">
+                {/* onSolve only exists in development builds - the server
+                    never sends the solution to production clients. */}
+                {onSolve
+                    ? <button type="button" className="dev-solve" title="Dev only: fill in the solution" onClick={onSolve}>SOLVE</button>
+                    : null}
                 {timer}
                 {exitButton}
                 <HelpButton menuHandler={menuHandler} />
