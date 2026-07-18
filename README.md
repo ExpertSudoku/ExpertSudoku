@@ -1,8 +1,60 @@
-This project implements the Sudoku web app used on [SudokuExchange.com](https://sudokuexchange.com), forked and extended into **ExpertSudoku** — a daily Sudoku puzzle in three difficulties (Medium, Expert, Hell), playable both as a Discord Activity (with live progress messages and streaks posted to the channel) and as a standalone website at `expertsudoku.app` (no login, no server tracking).
+<div align="center">
+
+<img src="public/logo192.png" alt="ExpertSudoku logo" width="72" />
+
+# ExpertSudoku
+
+**One grid a day. Pick your pain.**
+
+A daily sudoku in three difficulties — **MediumSudoku**, **ExpertSudoku** and **HellSudoku** —
+playable as a Discord Activity with live, spoiler-free progress boards and server streaks,
+or in any browser at [expertsudoku.app](https://expertsudoku.app).
+
+</div>
+
+<p align="center">
+  <img src="docs/media/01-landing.png" alt="The ExpertSudoku landing page with the three daily difficulties" width="640" />
+</p>
+
+Everyone in the world plays the same three grids; new puzzles arrive at 00:00 UTC.
+MediumSudoku needs singles only — a clean warm-up. ExpertSudoku adds pairs, pointing
+pairs and box/line reduction. HellSudoku is everything else — bring coffee.
+
+**Play together, spoil nothing.** Launch the Activity from a Discord channel and a live
+board appears in chat: it shows which cells each player has filled — never the digits —
+alongside avatars and running times. Up to four boards race side by side.
+
+**Keep the streak alive.** Every day at least one member solves a puzzle, your server's
+streak grows; miss a day and it resets. Each night the bot posts the day's results with
+a leaderboard of the fastest solvers.
+
+**Built for the way you actually play.** Progress saves automatically — leave mid-puzzle
+and pick it up later on the same board. Pausing hides the grid (no cheating at the
+office). Solved a puzzle? Revisit your solution any time, or jump straight into the next
+difficulty. No accounts, no ads, no data sold — ever.
+
+<p align="center">
+  <img src="docs/media/02-gameplay.png" alt="Gameplay in the dark theme" width="400" />
+  <img src="docs/media/03-paused.png" alt="Pausing hides the grid" width="400" />
+</p>
+
+<p align="center">
+  <img src="docs/media/04-solved.png" alt="The solved board with the post-solve difficulty switcher" width="640" />
+</p>
+
+---
+
+## Technical details
+
+ExpertSudoku is a fork of [grantm/sudoku-web-app](https://github.com/grantm/sudoku-web-app)
+(the app behind [SudokuExchange.com](https://sudokuexchange.com)), extended with a
+Discord Embedded App SDK integration and a Cloudflare Workers backend (Hono + D1 via
+Drizzle). One codebase serves both the standalone website and the Discord Activity;
+the client detects the Discord iframe via the `frame_id` query param.
 
 > **Note:** the Cloudflare Worker was renamed from `daily-sudoku` to `expertsudoku` (see `wrangler.json`). This creates a *new* Worker on deploy — the old `daily-sudoku` Worker is not automatically replaced and should be deleted manually from the Cloudflare dashboard once the new one is confirmed working. The D1 database is `expertsudoku-prod`; only the `DB` binding matters to the code.
 
-## Development setup
+### Development setup
 
 ```sh
 npm install
@@ -42,7 +94,7 @@ node scripts/mint-dev-token.mjs --sub <discord-user-id> --chan <channel-id> [--g
 5. `wrangler.json`'s `routes` points at the `expertsudoku.app` custom domain — the zone must already exist in the Cloudflare account.
 6. Delete the old `daily-sudoku` Worker from the Cloudflare dashboard once `expertsudoku` is confirmed working.
 
-## Original sudoku-web-app features
+### Original sudoku-web-app features
 
 Features include:
 
@@ -63,47 +115,6 @@ Features include:
   off the features you find annoying
 * Free to use and no ads
 * Full source code available
-
-## [Fork] Progress Tracking for External Apps
-
-This Sudoku app now includes a progress tracking feature that allows external applications to monitor user progress in real-time while solving puzzles.
-
-### How to Use Progress Tracking
-
-Add these URL parameters to enable progress tracking:
-
-**Required:**
-- `session=<unique-id>` - A unique session identifier for this game instance
-- `s=<puzzle-digits>` - The standard puzzle parameter (81-digit string)
-
-**Optional:**
-- `notify=<callback-url>` - HTTP endpoint to receive progress updates (URL encoded)
-- `method=message` - Use postMessage instead of HTTP callbacks (for iframe integration)
-- `interval=<milliseconds>` - Update interval in milliseconds (default: 5000)
-
-### Example Usage
-
-**For iframe integration:**
-```html
-<iframe src="https://your-domain.com/play/?s=530070000...&session=abc123&method=message&interval=3000"></iframe>
-```
-
-**For HTTP callbacks:**
-```javascript
-const url = `https://your-domain.com/play/?s=${puzzle}&session=${sessionId}&notify=${callbackUrl}&interval=5000`;
-```
-
-### Progress Data
-
-The system tracks and reports:
-- Current puzzle state (digits entered)
-- Pencil marks (both inner and outer)
-- Elapsed time and pause/resume status
-- Hints used
-- Completion status and final results
-- Real-time updates on significant events
-
-See `PROGRESS_TRACKING.md` for complete documentation and `example-external-app.html` for a working demonstration.
 
 ## Copyright and License
 
