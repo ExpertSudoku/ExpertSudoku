@@ -1,5 +1,5 @@
 import { Hono } from 'hono';
-import { and, eq } from 'drizzle-orm';
+import { and, eq, inArray } from 'drizzle-orm';
 import { getDb } from './db';
 import { puzzles, progress } from '../db/schema';
 import { utcDayString } from './day';
@@ -49,6 +49,39 @@ progressRoutes.get('/', async (context) => {
         completedAt: row.completedAt ? row.completedAt.getTime() : null,
         completionSeconds: row.completionSeconds,
     });
+});
+
+// GET /api/progress/summary -> {day, completed: difficulty[]} - which of
+// today's puzzles the session's player has already completed. Compact (no
+// state blobs): the Discord difficulty picker greys out finished rows from
+// this, so it has to be server truth - the localStorage completions record
+// only knows about solves made on the same device.
+progressRoutes.get('/summary', async (context) => {
+    const session = context.get('session');
+    const day = utcDayString();
+    const db = getDb(context.env);
+
+    const puzzleRows = await db
+        .select({ id: puzzles.id, difficulty: puzzles.difficulty })
+        .from(puzzles)
+        .where(eq(puzzles.day, day));
+    if (puzzleRows.length === 0) {
+        return context.json({ day, completed: [] });
+    }
+
+    const progressRows = await db
+        .select({ puzzleId: progress.puzzleId, completedAt: progress.completedAt })
+        .from(progress)
+        .where(and(
+            eq(progress.playerId, session.sub),
+            inArray(progress.puzzleId, puzzleRows.map((p) => p.id)),
+        ));
+    const difficultyById = new Map(puzzleRows.map((p) => [p.id, p.difficulty]));
+    const completed = progressRows
+        .filter((row) => row.completedAt)
+        .map((row) => difficultyById.get(row.puzzleId))
+        .filter((difficulty) => difficulty !== undefined);
+    return context.json({ day, completed });
 });
 
 function isValidDigitsString(value: unknown): value is string {

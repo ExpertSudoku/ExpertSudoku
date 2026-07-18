@@ -10,6 +10,9 @@ import DiscordPlay from "./discord-play.jsx";
 import DeleteDataButton from "./delete-data-button.jsx";
 // @ts-ignore
 import {isDifficulty} from "../../../shared/difficulties.js";
+// @ts-ignore
+import {recordCompletion, getCompletedDifficulties} from "../../lib/completions.js";
+import {fetchProgressSummary} from "../../lib/api.ts";
 
 export type SessionInfo = {
     sessionToken: string;
@@ -27,6 +30,9 @@ export default function DiscordRoot(): any {
     const [auth, setAuth] = useState<Auth | null>(null);
     const [session, setSession] = useState<SessionInfo | null>(null);
     const [difficulty, setDifficulty] = useState<string | null>(null);
+    // Server-provided puzzle day, set once the completion summary has been
+    // fetched - the key into the client-side completions record.
+    const [puzzleDay, setPuzzleDay] = useState<string | null>(null);
     // StrictMode double-mounts effects; without this guard authorize() (and
     // the /api/token exchange) would fire twice on every dev load.
     const started = useRef(false);
@@ -84,6 +90,27 @@ export default function DiscordRoot(): any {
         setupDiscordSdk();
     }, []);
 
+    // Discord progress is server-side: ask the worker which difficulties are
+    // already completed today and mirror that into the client-side record
+    // (src/lib/completions.js), so the picker (and the in-game pickers) grey
+    // out finished rows even when they were solved on another device.
+    useEffect(() => {
+        if (session === null) {
+            return;
+        }
+        let cancelled = false;
+        fetchProgressSummary(session.sessionToken).then((result) => {
+            if (cancelled || 'error' in result) {
+                return;
+            }
+            for (const finished of result.completed) {
+                recordCompletion(result.day, finished);
+            }
+            setPuzzleDay(result.day);
+        });
+        return () => { cancelled = true; };
+    }, [session]);
+
     if (auth === null || session === null) {
         return (<div className="site-page"><Spinner /></div>);
     }
@@ -93,7 +120,12 @@ export default function DiscordRoot(): any {
             <div className="site-page picker-screen">
                 <div className="picker-screen-inner">
                     <h1 className="su-display">Pick your pain.</h1>
-                    <DifficultyPicker onPick={setDifficulty} />
+                    {/* Read at render time: returning from a just-solved
+                        puzzle picks up completions mirrored mid-session. */}
+                    <DifficultyPicker
+                        onPick={setDifficulty}
+                        completed={puzzleDay ? getCompletedDifficulties(puzzleDay) : []}
+                    />
                     <DeleteDataButton session={session} />
                 </div>
             </div>

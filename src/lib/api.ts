@@ -60,6 +60,24 @@ export async function fetchProgress(sessionToken: string, difficulty: string): P
     return body as ProgressState;
 }
 
+export type ProgressSummary = {
+    day: string;
+    completed: Difficulty[];
+};
+
+// Which of today's difficulties the session's player has completed - server
+// truth, so the Discord picker shows completions made on other devices too.
+export async function fetchProgressSummary(sessionToken: string): Promise<ProgressSummary | ApiError> {
+    const response = await fetch('/api/progress/summary', {
+        headers: { Authorization: `Bearer ${sessionToken}` },
+    });
+    const body = await response.json();
+    if (!response.ok) {
+        return { error: body?.error || `http-${response.status}` };
+    }
+    return body as ProgressSummary;
+}
+
 export type PostProgressBody = {
     difficulty: string;
     state: Record<string, unknown>;
