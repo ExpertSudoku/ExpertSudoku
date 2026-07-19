@@ -14,6 +14,7 @@ pain" with zero letterforms; legible at 16px.
 | --- | --- |
 | `expertsudoku-concept1-icon.svg` | Master. App icon / favicon / Discord app icon (dark rounded container). |
 | `expertsudoku-concept1-mark.svg` | Transparent mark for inline use next to text (landing masthead). |
+| `expertsudoku-concept1-avatar.svg` | Extra outer padding, full-bleed square: safe for CIRCLE crops (Discord profile picture). Rendered to `discord-avatar.png` (1024px) by `scripts/generate-logo-assets.mjs`. |
 | `expertsudoku-concept1-horizontal.svg` | Icon + mono wordmark. Headers, docs, social banners. |
 | `expertsudoku-concept1-vertical.svg` | Stacked lockup. Profile images, app stores. |
 | `expertsudoku-concept1-mono-dark.svg` | Single-colour for LIGHT backgrounds / print. |

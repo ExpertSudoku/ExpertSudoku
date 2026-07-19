@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" role="img" aria-labelledby="c1a-title c1a-desc">
+  <title id="c1a-title">ExpertSudoku avatar</title>
+  <desc id="c1a-desc">The 3x3 tile block with extra outer padding on a full-bleed dark square, sized for circular avatar crops (Discord profile picture): the block's corners stay inside the inscribed circle.</desc>
+  <!-- Full square, no corner radius: circle crops show the inscribed circle,
+       and a rounded background would leave transparent notches. -->
+  <rect width="96" height="96" fill="#1b1b1e" />
+  <!-- Block side 60 (tile 18, gap 3), centred: corner distance from centre
+       is 30*sqrt(2) = 42.4, comfortably inside the crop radius of 48. -->
+  <g id="tiles">
+    <rect x="18" y="18" width="18" height="18" rx="4" fill="#23a55a" />
+    <rect x="39" y="18" width="18" height="18" rx="4" fill="#2f2f2f" />
+    <rect x="60" y="18" width="18" height="18" rx="4" fill="#2f2f2f" />
+    <rect x="18" y="39" width="18" height="18" rx="4" fill="#2f2f2f" />
+    <rect x="39" y="39" width="18" height="18" rx="4" fill="#f0b232" />
+    <rect x="60" y="39" width="18" height="18" rx="4" fill="#2f2f2f" />
+    <rect x="18" y="60" width="18" height="18" rx="4" fill="#2f2f2f" />
+    <rect x="39" y="60" width="18" height="18" rx="4" fill="#2f2f2f" />
+    <rect x="60" y="60" width="18" height="18" rx="4" fill="#f23f43" />
+  </g>
+</svg>

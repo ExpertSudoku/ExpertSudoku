@@ -39,12 +39,35 @@ for (let i = 0; i < 81; i++) {
     board += `<rect x="${x}" y="${y}" width="${tile}" height="${tile}" rx="10" fill="${fill}" />`;
 }
 
+// --- Bottom middle: the three dailies (same rows as the og image), in the
+// gap between Discord's avatar overlay (bottom-left corner of the banner in
+// the client UI) and the board on the right. ---------------------------
+function pips(x, y, count, fill, size = 11) {
+    let out = '';
+    for (let i = 0; i < count; i++) {
+        const cx = x + i * (size + 7) + size / 2;
+        out += `<path d="M ${cx} ${y - size / 2} l ${size / 2} ${size / 2} l ${-size / 2} ${size / 2} l ${-size / 2} ${-size / 2} Z" fill="${fill}" />`;
+    }
+    return out;
+}
+
+const ROWS_X = 500; // clear of the (large) avatar overlay in the bottom-left
+const difficultyRows = [
+    { y: 310, accent: 'Medium', colour: GREEN, count: 1 },
+    { y: 365, accent: 'Expert', colour: AMBER, count: 2 },
+    { y: 420, accent: 'Hell', colour: RED, count: 3 },
+].map(({ y, accent, colour, count }) =>
+    pips(ROWS_X + 2, y - 10, count, colour) +
+    `<text x="${ROWS_X + 62}" y="${y}" font-family="Spline Sans Mono" font-weight="700" font-size="30"><tspan fill="${colour}">${accent}</tspan><tspan fill="${DIM}">Sudoku</tspan></text>`
+).join('\n  ');
+
 // --- Left side: wordmark + tagline, anchored top-left (no logo mark) -----
 const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">
   <rect width="${W}" height="${H}" fill="${NIGHT}" />
   ${board}
   <text x="98" y="160" font-family="Spline Sans Mono" font-weight="700" font-size="78" letter-spacing="-1"><tspan fill="${BLURPLE}">Expert</tspan><tspan fill="${INK}">Sudoku</tspan></text>
   <text x="100" y="222" font-family="Spline Sans Mono" font-weight="700" font-size="30" fill="${DIM}">One grid a day. Pick your pain.</text>
+  ${difficultyRows}
 </svg>`;
 
 const resvg = new Resvg(svg, {

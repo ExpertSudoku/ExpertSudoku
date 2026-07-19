@@ -12,14 +12,15 @@ import { Resvg, initWasm } from '@resvg/resvg-wasm';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = join(__dirname, '..');
 const masterPath = join(root, 'src/svg/logos/expertsudoku-concept1-icon.svg');
+const avatarPath = join(root, 'src/svg/logos/expertsudoku-concept1-avatar.svg');
 const publicDir = join(root, 'public');
 
 await initWasm(readFileSync(join(root, 'node_modules/@resvg/resvg-wasm/index_bg.wasm')));
 
 const svg = readFileSync(masterPath, 'utf8');
 
-function renderPng(size) {
-    const resvg = new Resvg(svg, {
+function renderPng(size, source = svg) {
+    const resvg = new Resvg(source, {
         font: { loadSystemFonts: false },
         fitTo: { mode: 'width', value: size },
     });
@@ -48,4 +49,9 @@ writeFileSync(join(publicDir, 'logo192.png'), renderPng(192));
 writeFileSync(join(publicDir, 'logo512.png'), renderPng(512));
 writeFileSync(join(publicDir, 'favicon.ico'), pngToIco(renderPng(32), 32));
 copyFileSync(masterPath, join(publicDir, 'favicon.svg'));
-console.log('wrote public/logo192.png, logo512.png, favicon.ico, favicon.svg');
+
+// Discord avatar variant (circle-crop safe, extra outer padding) - uploaded
+// manually / via PATCH /users/@me, not served by the site.
+const avatarSvg = readFileSync(avatarPath, 'utf8');
+writeFileSync(join(root, 'src/svg/logos/discord-avatar.png'), renderPng(1024, avatarSvg));
+console.log('wrote public/logo192.png, logo512.png, favicon.ico, favicon.svg, src/svg/logos/discord-avatar.png');
