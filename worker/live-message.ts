@@ -1,5 +1,5 @@
 import { ButtonStyle, ComponentType } from 'discord-api-types/v10';
-import { and, eq } from 'drizzle-orm';
+import { and, eq, isNull } from 'drizzle-orm';
 import { getDb } from './db';
 import { puzzles, progress, players, liveMessages } from '../db/schema';
 import { renderBoardPng, CellState, EntryStatus, MAX_BOARDS } from './render/board-image';
@@ -173,6 +173,28 @@ export async function maybeUpdateLiveMessage(
     }
 
     if (!force && liveMsg.lastEditAt && Date.now() - liveMsg.lastEditAt.getTime() < EDIT_THROTTLE_MS) {
+        await db.update(liveMessages).set({ dirty: true }).where(eq(liveMessages.id, liveMsg.id));
+        return;
+    }
+
+    // Claim this paint window atomically BEFORE the slow work (render +
+    // Discord call take seconds; progress saves arrive every ~2s and each
+    // schedules a pass): only the pass that flips lastEditAt from the exact
+    // value it read gets to paint. Without this, every pass that starts
+    // while lastEditAt is stale takes the send path and posts its own
+    // message (duplicated boards after every >10min lull, and on racing
+    // first sends). Losers mark the row dirty so the deferred flush
+    // repaints with the newest data once the throttle window passes.
+    const claim = await db
+        .update(liveMessages)
+        .set({ lastEditAt: new Date() })
+        .where(and(
+            eq(liveMessages.id, liveMsg.id),
+            liveMsg.lastEditAt
+                ? eq(liveMessages.lastEditAt, liveMsg.lastEditAt)
+                : isNull(liveMessages.lastEditAt),
+        ));
+    if (claim.meta.changes === 0) {
         await db.update(liveMessages).set({ dirty: true }).where(eq(liveMessages.id, liveMsg.id));
         return;
     }
