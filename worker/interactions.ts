@@ -114,10 +114,12 @@ interactionRoutes.post('/', async (context) => {
                     target: [pendingLaunches.userId, pendingLaunches.channelId],
                     set: { difficulty, createdAt: new Date() },
                 });
-            // Bank the interaction's webhook token for the difficulty being
-            // launched - see bankInteractionToken.
+            // Bank the interaction's webhook token for ALL of today's
+            // difficulties, not just the pressed one - the player may switch
+            // difficulty inside the activity, and the token is channel-wide
+            // capability (see bankInteractionToken).
             if (interaction.token) {
-                await bankInteractionToken(db, channelId, interaction.token, [difficulty]);
+                await bankInteractionToken(db, channelId, interaction.token, DIFFICULTIES);
             }
             return context.json({ type: InteractionResponseType.LaunchActivity });
         }
