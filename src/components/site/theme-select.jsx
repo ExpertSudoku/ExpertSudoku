@@ -2,28 +2,24 @@ import { useEffect, useState } from 'react';
 
 import { getThemePref, setThemePref, subscribeTheme } from '../../lib/theme.js';
 
-const OPTIONS = [
-    { value: 'light', label: 'Light' },
-    { value: 'auto', label: 'Auto' },
-    { value: 'dark', label: 'Dark' },
-];
+// Click order: both explicit choices first, then back to following the OS.
+const CYCLE = ['light', 'dark', 'auto'];
+const LABELS = { light: 'Light', dark: 'Dark', auto: 'Auto' };
 
 export default function ThemeSelect() {
     const [pref, setPref] = useState(getThemePref());
     useEffect(() => subscribeTheme(() => setPref(getThemePref())), []);
 
+    const next = CYCLE[(CYCLE.indexOf(pref) + 1) % CYCLE.length];
     return (
-        <div className="theme-select" role="group" aria-label="Theme">
-            {OPTIONS.map((option) => (
-                <button
-                    key={option.value}
-                    type="button"
-                    aria-pressed={pref === option.value}
-                    onClick={() => setThemePref(option.value)}
-                >
-                    {option.label}
-                </button>
-            ))}
-        </div>
+        <button
+            type="button"
+            className="theme-select"
+            title={`Theme: ${LABELS[pref]} — switch to ${LABELS[next]}`}
+            aria-label={`Theme: ${LABELS[pref]}. Switch to ${LABELS[next]}.`}
+            onClick={() => setThemePref(next)}
+        >
+            {LABELS[pref]}
+        </button>
     );
 }

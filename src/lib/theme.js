@@ -1,5 +1,5 @@
-// Single authority for the light/dark/auto theme, shared by the landing
-// page selector and the in-game theme button.
+// Single authority for the light/dark/auto theme, shared by the theme cycle
+// button in the landing masthead, the Discord picker and the in-game header.
 //
 // Effective theme is applied as:
 //  - documentElement 'light'/'dark' class -> shell tokens (site-theme.css)
