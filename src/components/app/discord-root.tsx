@@ -10,6 +10,8 @@ import DiscordPlay from "./discord-play.jsx";
 // @ts-ignore - untyped .jsx/.js module
 import DeleteDataButton from "./delete-data-button.jsx";
 // @ts-ignore - untyped .jsx/.js module
+import BotInstallPrompt, {wasPromptSeen} from "./bot-install-prompt.jsx";
+// @ts-ignore - untyped .jsx/.js module
 import {isDifficulty} from "../../../shared/difficulties.js";
 // @ts-ignore - untyped .jsx/.js module
 import {recordCompletion, getCompletedDifficulties} from "../../lib/completions.js";
@@ -35,6 +37,9 @@ export default function DiscordRoot() {
     const [auth, setAuth] = useState<Auth | null>(null);
     const [session, setSession] = useState<SessionInfo | null>(null);
     const [difficulty, setDifficulty] = useState<string | null>(null);
+    // Guild admins whose server doesn't have the bot yet get a one-time
+    // install prompt on the picker (decided server-side by /api/token).
+    const [suggestBotInstall, setSuggestBotInstall] = useState(false);
     // Server-provided puzzle day, set once the completion summary has been
     // fetched - the key into the client-side completions record.
     const [puzzleDay, setPuzzleDay] = useState<string | null>(null);
@@ -68,7 +73,11 @@ export default function DiscordRoot() {
                 guildId: discordSdk.guildId,
             }),
         });
-        const { access_token, session_token, preselected_difficulty } = await response.json();
+        const { access_token, session_token, preselected_difficulty, suggest_bot_install } = await response.json();
+        const guildId = discordSdk.guildId;
+        if (suggest_bot_install && guildId && !wasPromptSeen(guildId)) {
+            setSuggestBotInstall(true);
+        }
 
         const authResult = await discordSdk.commands.authenticate({ access_token });
         setAuth(authResult);
@@ -134,6 +143,9 @@ export default function DiscordRoot() {
                         <ThemeSelect />
                     </header>
                     <h1 className="su-display">Pick your pain.</h1>
+                    {suggestBotInstall && getDiscordSdk().guildId
+                        ? <BotInstallPrompt guildId={getDiscordSdk().guildId} />
+                        : null}
                     {/* Read at render time: returning from a just-solved
                         puzzle picks up completions mirrored mid-session. */}
                     <DifficultyPicker

@@ -274,6 +274,60 @@
     color: var(--su-ink);
 }
 
+/* One-time bot-install prompt for guild admins (Discord picker screen). */
+.bot-prompt {
+    margin: 0 0 1.5rem;
+    padding: 1rem 1.25rem;
+    background: var(--su-panel);
+    border: 1px solid var(--su-line);
+    border-left: 3px solid var(--su-blurple);
+    border-radius: 14px;
+}
+
+.bot-prompt-text {
+    margin: 0 0 0.85rem;
+    font-size: 0.95rem;
+    color: var(--su-dim);
+}
+
+.bot-prompt-text strong {
+    color: var(--su-ink);
+}
+
+.bot-prompt-actions {
+    display: flex;
+    gap: 0.6rem;
+}
+
+.bot-prompt-actions button {
+    font-family: var(--su-mono);
+    font-weight: 500;
+    font-size: 0.85rem;
+    padding: 0.45rem 0.9rem;
+    border-radius: 8px;
+    border: 1px solid transparent;
+    cursor: pointer;
+}
+
+.bot-prompt-add {
+    background: var(--su-blurple);
+    color: #ffffff;
+}
+
+.bot-prompt-add:hover {
+    opacity: 0.9;
+}
+
+.bot-prompt-dismiss {
+    background: transparent;
+    border-color: var(--su-line);
+    color: var(--su-dim);
+}
+
+.bot-prompt-dismiss:hover {
+    color: var(--su-ink);
+}
+
 /* Self-service data deletion on the Discord picker screen. */
 .delete-data {
     margin-top: 2.5rem;

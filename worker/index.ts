@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { RouteBases, OAuth2Routes, Routes } from "discord-api-types/v10";
+import { PermissionFlagsBits, RouteBases, OAuth2Routes, Routes } from "discord-api-types/v10";
 import {fetchAndRetry} from "./utils";
 import {puzzleRoutes} from "./puzzle";
 import {progressRoutes} from "./progress";
@@ -8,6 +8,7 @@ import {mintSession} from "./session";
 import {runDailyStreaks} from "./streaks";
 import {interactionRoutes, consumePendingDifficulty} from "./interactions";
 import {meRoutes} from "./me";
+import {discordApi} from "./discord";
 const app = new Hono<{ Bindings: Env }>();
 
 app.route('/api/puzzle', puzzleRoutes);
@@ -87,8 +88,44 @@ app.post("/api/token", async (context) => {
         request.channelId ?? ''
     );
 
-    return context.json({ access_token, session_token, preselected_difficulty });
+    // Should the client offer to add the bot to this server? Only when the
+    // player can actually do it (guild admin / Manage Server / owner, from
+    // the `guilds` scope's permissions field) AND the bot isn't already a
+    // member (bot-token guild fetch fails with 403 when it isn't). Purely
+    // best-effort: any error just means no prompt.
+    const suggest_bot_install = request.guildId
+        ? await shouldSuggestBotInstall(context.env, access_token, request.guildId)
+        : false;
+
+    return context.json({ access_token, session_token, preselected_difficulty, suggest_bot_install });
 });
+
+async function shouldSuggestBotInstall(env: Env, userAccessToken: string, guildId: string): Promise<boolean> {
+    try {
+        const guildsResponse = await fetchAndRetry(`${RouteBases.api}${Routes.userGuilds()}`, {
+            headers: { Authorization: `Bearer ${userAccessToken}` },
+        });
+        if (!guildsResponse.ok) {
+            return false;
+        }
+        const guilds = (await guildsResponse.json()) as { id: string; owner?: boolean; permissions?: string }[];
+        const guild = guilds.find((entry) => entry.id === guildId);
+        if (!guild) {
+            return false;
+        }
+        const permissions = BigInt(guild.permissions ?? '0');
+        const canInvite = guild.owner
+            || (permissions & PermissionFlagsBits.Administrator) !== 0n
+            || (permissions & PermissionFlagsBits.ManageGuild) !== 0n;
+        if (!canInvite) {
+            return false;
+        }
+        const botGuildResponse = await discordApi(env, Routes.guild(guildId));
+        return !botGuildResponse.ok;
+    } catch {
+        return false;
+    }
+}
 
 // Dev-only visual check for the live board image (gated - returns 404
 // unless DEV_PREVIEW=1 is set, which only ever happens in .dev.vars):
