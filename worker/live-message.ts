@@ -100,7 +100,7 @@ function entrySeconds(row: ParticipantRow, status: EntryStatus): number {
     return Math.floor((row.elapsedMs + Math.max(0, Date.now() - row.updatedAt.getTime())) / 1000);
 }
 
-// "Play along" button for the message's own difficulty (primary/blurple),
+// "Play now" button for the message's own difficulty (primary/blurple),
 // plus direct-entry buttons for the other two difficulties. custom_ids are
 // handled by worker/interactions.ts, which records the choice and responds
 // with LAUNCH_ACTIVITY.
@@ -109,7 +109,7 @@ function buildComponents(difficulty: string): MessageComponent[] {
     return [{
         type: ComponentType.ActionRow,
         components: [
-            { type: ComponentType.Button, style: ButtonStyle.Primary, label: 'Play along', custom_id: `play:${difficulty}` },
+            { type: ComponentType.Button, style: ButtonStyle.Primary, label: 'Play now', custom_id: `play:${difficulty}` },
             ...others.map((d) => ({
                 type: ComponentType.Button as const,
                 style: ButtonStyle.Secondary,
