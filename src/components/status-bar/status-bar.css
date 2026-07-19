@@ -195,7 +195,10 @@
 @media (max-width: 52rem) {
     .status-bar {
         display: grid;
-        grid-template-columns: auto 1fr auto auto;
+        /* minmax(0, ...) lets the wordmark/spacer columns shrink below their
+         * content - otherwise the grid's intrinsic width exceeds the bar on
+         * narrow phones and the right-hand chips render past the edge. */
+        grid-template-columns: minmax(0, auto) minmax(0, 1fr) auto auto;
         align-content: center;
         align-items: center;
         row-gap: 0.5rem;
@@ -212,6 +215,8 @@
         grid-row: 1;
         grid-column: 1;
         font-size: 1.2rem;
+        min-width: 0;
+        overflow: hidden;
     }
 
     .status-bar .theme-select {
@@ -242,7 +247,7 @@
     }
 
     .status-bar-controls > button.dev-solve {
-        grid-row: 1;
+        grid-row: 2;
         grid-column: 2;
         justify-self: end;
     }
