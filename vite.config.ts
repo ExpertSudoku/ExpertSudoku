@@ -12,6 +12,7 @@ export default defineConfig({
 		},
         allowedHosts: [
             'expertsudoku.app',
+			'sic-pale-antiques-canvas.trycloudflare.com'
         ]
 	},
 });

@@ -22,7 +22,7 @@ export type BoardEntry = {
 };
 
 export type BoardParams = {
-    title: { number: number; difficulty: string }; // heading: "ExpertSudoku No.N — Label" + difficulty icon
+    title: { number: number; difficulty: string }; // heading: "ExpertSudoku No. N — Label" + difficulty icon
     boards: BoardTile[]; // up to MAX_BOARDS, in display order
     entries: BoardEntry[]; // leaderboard column, in display order
 };
@@ -37,8 +37,8 @@ const GIVEN_COLOR = '#666666';
 const EMPTY_COLOR = '#2f2f2f';
 const FALLBACK_FILL = '#5865F2';
 
-// The title brands each difficulty as its own daily: "MediumSudoku No.12",
-// "ExpertSudoku No.12", "HellSudoku No.12".
+// The title brands each difficulty as its own daily: "MediumSudoku No. 12",
+// "ExpertSudoku No.12", "HellSudoku No. 12".
 const DIFFICULTY_META: Record<string, { name: string; color: string; pips: number }> = {
     medium: { name: 'MediumSudoku', color: '#23a55a', pips: 1 },
     expert: { name: 'ExpertSudoku', color: '#f0b232', pips: 2 },
@@ -158,7 +158,7 @@ function renderHeader(title: BoardParams['title']): string {
     nodes.push(
         `<text x="${x + 6}" y="${cy}" dominant-baseline="middle" `
         + `font-family="Inter" font-size="${HEADER_FONT_SIZE}" fill="#e6e6e6">`
-        + `${escapeText(`${meta.name} No.${title.number}`)}</text>`
+        + `${escapeText(`${meta.name} No. ${title.number}`)}</text>`
     );
     return nodes.join('');
 }
@@ -236,7 +236,7 @@ function renderLeaderboard(entries: BoardEntry[], boardCount: number, canvasHeig
     });
 }
 
-// Renders a heading (difficulty icon + "ExpertSudoku No.N — Label"), up to
+// Renders a heading (difficulty icon + "ExpertSudoku No. N — Label"), up to
 // four players' redacted board patterns (given / player-filled / empty -
 // never actual digit glyphs, so nobody's answers leak) in an adaptive tile
 // grid, each with the player's avatar next to it, plus a right-hand

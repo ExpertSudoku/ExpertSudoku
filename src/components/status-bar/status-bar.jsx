@@ -3,7 +3,7 @@ import Timer from '../timer/timer';
 import './status-bar.css';
 import ExitButton from "../buttons/exit-button";
 import HelpButton from "../buttons/help-button";
-// The exact same segmented Light/Auto/Dark control as the landing masthead.
+// The exact same theme cycle button as the landing masthead.
 import ThemeSelect from "../site/theme-select.jsx";
 import Pips from "../site/pips.jsx";
 
@@ -25,7 +25,7 @@ function Wordmark ({ difficulty, puzzleNumber }) {
             <span className="site-name-accent">{mark.accent}</span>
             <span className="site-name-rest">{mark.rest}</span>
             {puzzleNumber
-                ? <span className="site-name-number">No.{puzzleNumber}</span>
+                ? <span className="site-name-number">No.&nbsp;{puzzleNumber}</span>
                 : null}
         </span>
     );
