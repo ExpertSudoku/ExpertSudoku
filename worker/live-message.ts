@@ -38,6 +38,19 @@ const REPOST_AFTER_MS = 10 * 60 * 1000;
 // slightly shorter so an edit/send never races the hard expiry.
 const INTERACTION_TOKEN_FRESH_MS = 14 * 60 * 1000;
 
+// The last stretch of a webhook token's usable life. A webhook-authored
+// message becomes unpaintable at token expiry, so any pass landing in this
+// window paints the message's FINAL presentation: every non-completed player
+// frozen to the pause icon and a line of message text saying live updates
+// have stopped (the buttons underneath are the way to re-arm - a press banks
+// a fresh token). While a player is actively playing, saves arrive every ~2s
+// and each schedules a pass, so at least one is guaranteed to land in this
+// window; a player who stopped saving earlier was already frozen by the
+// leaver sweep. Token age only grows, so once finalized every later paint
+// (if any lands before expiry) is finalized too - fresher data, same frozen
+// presentation.
+const FINAL_PAINT_WINDOW_MS = 60_000;
+
 function sleep(ms: number): Promise<void> {
     return new Promise((resolve) => setTimeout(resolve, ms));
 }
@@ -78,11 +91,14 @@ function sortParticipants(rows: ParticipantRow[]): ParticipantRow[] {
 
 // 'done' if completed; 'inactive' if paused or no save for
 // INACTIVE_AFTER_MS (left the activity without completing); else 'active'.
-function entryStatus(row: ParticipantRow): EntryStatus {
+// A finalizing paint (see FINAL_PAINT_WINDOW_MS) forces every non-completed
+// player to 'inactive' - nothing can repaint after it, so nobody may be
+// left looking live forever.
+function entryStatus(row: ParticipantRow, finalizing: boolean): EntryStatus {
     if (row.completedAt) {
         return 'done';
     }
-    if (row.paused || Date.now() - row.updatedAt.getTime() > INACTIVE_AFTER_MS) {
+    if (finalizing || row.paused || Date.now() - row.updatedAt.getTime() > INACTIVE_AFTER_MS) {
         return 'inactive';
     }
     return 'active';
@@ -221,9 +237,23 @@ export async function maybeUpdateLiveMessage(
     }
 
     const sorted = sortParticipants(participantRows);
+
+    const tokenAgeMs = liveMsg.interactionToken && liveMsg.interactionTokenAt
+        ? Date.now() - liveMsg.interactionTokenAt.getTime()
+        : Infinity;
+    const tokenFresh = tokenAgeMs < INTERACTION_TOKEN_FRESH_MS;
+    // Pre-expiry finalization, webhook fallback only (bot-authored messages
+    // stay editable forever). Bounded by tokenFresh so the paint itself can
+    // still land.
+    const finalizing = liveMsg.viaWebhook && tokenFresh
+        && tokenAgeMs >= INTERACTION_TOKEN_FRESH_MS - FINAL_PAINT_WINDOW_MS;
+
     // All state (puzzle number, difficulty, timings, statuses) lives in the
-    // rendered image - the message text itself stays empty.
-    const content = '';
+    // rendered image - the message text stays empty, except on a finalizing
+    // paint, where one line explains why the board stopped moving.
+    const content = finalizing
+        ? '-# Live updates paused — Discord limits how long this board can stay live. Press a button below for a fresh one.'
+        : '';
     const components = buildComponents(difficulty);
 
     // One avatar fetch per participant, shared between the board tiles and
@@ -236,7 +266,7 @@ export async function maybeUpdateLiveMessage(
     }));
 
     const entries = sorted.map((row, i) => {
-        const status = entryStatus(row);
+        const status = entryStatus(row, finalizing);
         return { avatarPng: avatars[i], status, seconds: entrySeconds(row, status) };
     });
 
@@ -245,9 +275,6 @@ export async function maybeUpdateLiveMessage(
         boards,
         entries,
     });
-
-    const tokenFresh = !!liveMsg.interactionToken && !!liveMsg.interactionTokenAt
-        && Date.now() - liveMsg.interactionTokenAt.getTime() < INTERACTION_TOKEN_FRESH_MS;
 
     let messageId = liveMsg.messageId;
     let viaWebhook = liveMsg.viaWebhook;
